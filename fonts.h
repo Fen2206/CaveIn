@@ -17,7 +17,6 @@ typedef struct t_rect {
 } Rect;
 extern void initialize_fonts(void);
 extern void cleanup_fonts(void);
-extern void ggprint(Rect *r, int ptsz,
-								int advance, int cref, const char *fmt, ...);
+extern void ggprint(Rect *r, int ptsz, int advance, int cref, const char *fmt, ...);
 #endif //_FONTS_H_
 

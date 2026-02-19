@@ -1,11 +1,9 @@
-all: play
+all: cavein
 
-play: falrowhani.cpp asteroids.cpp log.cpp image.cpp timers.cpp\
-	falrowhani.h jgaribay.h harinaga.h image.h log.h
-	g++ asteroids.cpp falrowhani.cpp log.cpp image.cpp timers.cpp \
-		jgaribay.cpp harinaga.cpp \
-		libggfonts.a \
-		-Wall -lX11 -lGL -o play
+cavein: cavein.cpp falrowhani.cpp image.cpp timers.cpp
+	g++ cavein.cpp falrowhani.cpp image.cpp timers.cpp jgaribay.cpp \
+		harinaga.cpp libggfonts.a -Wall -lX11 -lGL -ocavein
 
 clean:
-	rm -f play
+	rm -f cavein
+
