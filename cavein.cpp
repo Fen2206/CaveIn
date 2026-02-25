@@ -62,6 +62,15 @@ extern double timeDiff(struct timespec *start, struct timespec *end);
 extern void timeCopy(struct timespec *dest, struct timespec *source);
 //-----------------------------------------------------------------------------
 
+//Struct for game state 
+enum GameState {
+    STATE_TITLE,
+    STATE_MENU,
+    STATE_GAME,
+    STATE_SETTINGS,
+    STATE_EXIT
+};
+
 class Global {
     public:
         int xres, yres;
@@ -69,7 +78,8 @@ class Global {
         int mouse_cursor_on;
         Image background;
         float scale;
-
+        int menuSelection;
+        GameState state;
 
         Global() : background("./assets/cave2.png") {
             xres = 500;
@@ -77,6 +87,8 @@ class Global {
             memset(keys, 0, 65536);
 
             mouse_cursor_on = 1;
+            state = STATE_TITLE; //Start at game title
+            menuSelection = 0;
         }
 } g;
 
@@ -218,6 +230,10 @@ void check_mouse(XEvent *e);
 int check_keys(XEvent *e);
 void physics();
 void render();
+void renderTitle();
+void renderMenu();
+//void renderGame();
+//void renderSettings();
 
 //==========================================================================
 // M A I N
@@ -362,6 +378,39 @@ int check_keys(XEvent *e)
     }
     (void)shift;
     switch (key) {
+        case XK_Return:
+
+            if (g.state == STATE_TITLE) {
+                g.state = STATE_MENU;
+            }
+            else if (g.state == STATE_MENU) {
+
+                if (g.menuSelection == 0)
+                    g.state = STATE_GAME;
+
+                else if (g.menuSelection == 1)
+                    g.state = STATE_SETTINGS;
+
+                else if (g.menuSelection == 2)
+                    return 1;  
+            }
+
+            break;
+        case XK_Up:
+            if (g.state == STATE_MENU) {
+                g.menuSelection--;
+                if (g.menuSelection < 0)
+                    g.menuSelection = 2;
+            }
+            break;
+
+        case XK_Down:
+            if (g.state == STATE_MENU) {
+                g.menuSelection++;
+                if (g.menuSelection > 2)
+                    g.menuSelection = 0;
+            }
+            break;
         case XK_Escape:
             return 1;
         case XK_m:
@@ -369,8 +418,6 @@ int check_keys(XEvent *e)
             x11.show_mouse_cursor(g.mouse_cursor_on);
             break;
         case XK_s:
-            break;
-        case XK_Down:
             break;
         case XK_equal:
             break;
@@ -387,14 +434,67 @@ void physics()
 
 void render()
 {
-    Rect r;
     glClear(GL_COLOR_BUFFER_BIT);
+
+    switch (g.state) {
+        case STATE_TITLE:
+            renderTitle();
+            break;
+
+        case STATE_MENU:
+            renderMenu();
+            break;
+
+        /*case STATE_GAME:
+            renderGame();
+            break; */
+
+       /* case STATE_SETTINGS:
+            renderSettings();
+            break; */
+
+        case STATE_EXIT:
+            exit(0);
+            break;
+    }
+}
+
+void renderTitle()
+{
+    Rect r;
+
     g.background.show(g.xres/2, g.xres/2, g.yres/2, 0.0f);
 
     r.bot = g.yres/2;
     r.left = g.xres/2;
     r.center = 1;
+
     ggprint(&r, 32, 32, 0x0000ffff, "Cave In!");
-    ggprint(&r, 16, 16, 0x0000ffff, "By: Fenoon Alrowhani, Henry Arinaga, Joshua Garibay");
+    ggprint(&r, 16, 16, 0x0000ffff,
+            "By: Fenoon Alrowhani, Henry Arinaga, Joshua Garibay");
+
+    ggprint(&r, 24, 16, 0x00ffffff, "Press ENTER to continue");
 }
 
+void renderMenu()
+{
+    Rect r;
+    r.bot = g.yres - 200;
+    r.left = g.xres/2;
+    r.center = 1;
+
+    ggprint(&r, 32, 32, 0x00ffffff, "MAIN MENU");
+
+    const char* options[3] = {
+        "Start Game",
+        "Settings",
+        "Exit"
+    };
+
+    for (int i = 0; i < 3; i++) {
+        if (i == g.menuSelection)
+            ggprint(&r, 24, 24, 0x0000ff00, options[i]); 
+        else
+            ggprint(&r, 24, 24, 0x00ffffff, options[i]);
+    }
+}
