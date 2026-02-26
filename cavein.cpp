@@ -77,15 +77,16 @@ class Global {
         char keys[65536];
         int mouse_cursor_on;
         Image background;
+        //Image game;
         float scale;
         int menuSelection;
         GameState state;
 
-        Global() : background("./assets/cave2.png") {
+        Global() : background("./assets/cave2.png")
+{
             xres = 500;
             yres = 650;
             memset(keys, 0, 65536);
-
             mouse_cursor_on = 1;
             state = STATE_TITLE; //Start at game title
             menuSelection = 0;
@@ -418,6 +419,7 @@ int check_keys(XEvent *e)
             x11.show_mouse_cursor(g.mouse_cursor_on);
             break;
         case XK_s:
+
             break;
         case XK_equal:
             break;
