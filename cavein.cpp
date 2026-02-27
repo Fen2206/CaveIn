@@ -467,7 +467,7 @@ void renderTitle()
 
     g.background.show(g.xres/2, g.xres/2, g.yres/2, 0.0f);
 
-    r.bot = g.yres/2;
+    r.bot = g.yres/2 + 50;
     r.left = g.xres/2;
     r.center = 1;
 
@@ -475,7 +475,12 @@ void renderTitle()
     ggprint(&r, 16, 16, 0x0000ffff,
             "By: Fenoon Alrowhani, Henry Arinaga, Joshua Garibay");
 
-    ggprint(&r, 24, 16, 0x00ffffff, "Press ENTER to continue");
+    Rect r2;
+    r2.bot = 250; 
+    r2.left = g.xres/2;
+    r2.center = 1;
+
+    ggprint(&r2, 24, 16, 0x00ffffff, "Press ENTER to continue");
 }
 
 void renderMenu()
