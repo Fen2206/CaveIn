@@ -82,7 +82,7 @@ class Global {
         int menuSelection;
         GameState state;
 
-        Global() : background("./assets/cave2.png")
+        Global() : background("./assets/back.png")
 {
             xres = 500;
             yres = 650;
