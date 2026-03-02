@@ -31,6 +31,7 @@ void gamePhysics()
 
 void renderGame()
 {
+    g.gameBackground.show(g.xres/2, g.xres/2, g.yres/2, 0.0f);
     drawObstacles();
     drawGems();
     drawPowerups();

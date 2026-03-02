@@ -78,12 +78,14 @@ class Global {
         char keys[65536];
         int mouse_cursor_on;
         Image background;
+        Image game;
         //Image game;
         float scale;
         int menuSelection;
         GameState state;
 
-        Global() : background("./assets/back.png")
+        Global() : background("./assets/back.png"),
+        game("./assets/game.png")
 {
             xres = 500;
             yres = 650;
@@ -302,6 +304,7 @@ void init_opengl(void)
     glEnable(GL_TEXTURE_2D);
     initialize_fonts();
     g.background.init_gl();
+    g.game.init_gl();
     g.scale = resolution_scale(&g.background);
 }
 
