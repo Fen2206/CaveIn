@@ -79,6 +79,7 @@ Image::Image(const char *fname)
     if (!ppmFlag)
         unlink(ppmname);
 } 
+//Image img[1] = {"images/walk.gif"};
 
 void Image::show(float wid, int pos_x, int pos_y, float angle, int flipped)
 {
