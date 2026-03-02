@@ -26,6 +26,7 @@
 #include "harinaga.h"
 #include "falrowhani.h"
 #include "jgaribay.h"
+#include "game.h"
 
 //defined types
 typedef float Flt;
@@ -233,7 +234,7 @@ void physics();
 void render();
 void renderTitle();
 void renderMenu();
-//void renderGame();
+void renderGame();
 //void renderSettings();
 
 //==========================================================================
@@ -431,7 +432,8 @@ int check_keys(XEvent *e)
 
 void physics()
 {
-
+if (g.state == STATE_GAME)
+    gamePhysics();
 }
 
 void render()
@@ -447,9 +449,9 @@ void render()
             renderMenu();
             break;
 
-        /*case STATE_GAME:
+        case STATE_GAME:
             renderGame();
-            break; */
+            break; 
 
        /* case STATE_SETTINGS:
             renderSettings();
