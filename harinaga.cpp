@@ -1,7 +1,7 @@
 #include "harinaga.h"
 #include <GL/gl.h>
 #include <cmath>
-#include "defs.h"
+#include "input.h"
 #include <X11/keysym.h>
 
 static float px = 100.0f;

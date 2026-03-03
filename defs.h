@@ -152,7 +152,5 @@ typedef struct t_frustum
 	Vec save_planes[6];
 } Frustum;
 
-// Global input
-extern char g_keys[65536];
 
 #endif
