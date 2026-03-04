@@ -67,7 +67,6 @@ extern double timeDiff(struct timespec *start, struct timespec *end);
 extern void timeCopy(struct timespec *dest, struct timespec *source);
 //-----------------------------------------------------------------------------
 
-
 // Struct for game state
 enum GameState
 {
@@ -93,12 +92,11 @@ public:
     {
         xres = 500;
         yres = 650;
-        //reset keys
+        // reset keys
         memset(g_keys, 0, 65536);
         mouse_cursor_on = 1;
         state = STATE_TITLE; // Start at game title
         menuSelection = 0;
-
     }
 } g;
 char g_keys[65536];
@@ -435,14 +433,18 @@ int check_keys(XEvent *e)
         {
 
             if (g.menuSelection == 0)
+            {
                 g.state = STATE_GAME;
                 initGame();
-
+            }
             else if (g.menuSelection == 1)
+            {
                 g.state = STATE_SETTINGS;
-
+            }
             else if (g.menuSelection == 2)
+            {
                 return 1;
+            }
         }
 
         break;
@@ -503,9 +505,9 @@ void render()
         renderGame();
         break;
 
-        /* case STATE_SETTINGS:
-             renderSettings();
-             break; */
+    case STATE_SETTINGS:
+        // renderSettings();
+        break;
 
     case STATE_EXIT:
         exit(0);
