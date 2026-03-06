@@ -66,39 +66,18 @@ extern double timeSpan;
 extern double timeDiff(struct timespec *start, struct timespec *end);
 extern void timeCopy(struct timespec *dest, struct timespec *source);
 //-----------------------------------------------------------------------------
-
-// Struct for game state
-enum GameState
+Global::Global() : background("./assets/cave2.png")
 {
-    STATE_TITLE,
-    STATE_MENU,
-    STATE_GAME,
-    STATE_SETTINGS,
-    STATE_EXIT
-};
+    xres = 500;
+    yres = 650;
+    memset(g_keys, 0, 65536);
+    mouse_cursor_on = 1;
+    state = STATE_TITLE;
+    menuSelection = 0;
+}
 
-class Global
-{
-public:
-    int xres, yres;
-    char keys[65536];
-    int mouse_cursor_on;
-    Image background;
-    float scale;
-    int menuSelection;
-    GameState state;
+Global g;
 
-    Global() : background("./assets/cave2.png")
-    {
-        xres = 500;
-        yres = 650;
-        // reset keys
-        memset(g_keys, 0, 65536);
-        mouse_cursor_on = 1;
-        state = STATE_TITLE; // Start at game title
-        menuSelection = 0;
-    }
-} g;
 char g_keys[65536];
 
 // X Windows variables
@@ -329,6 +308,7 @@ void init_opengl(void)
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_FOG);
     glDisable(GL_CULL_FACE);
+
     //
     // Clear the screen to black
     glClearColor(0.0, 0.0, 0.0, 1.0);
