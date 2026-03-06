@@ -28,6 +28,7 @@
 #include "jgaribay.h"
 #include "game.h"
 
+
 //defined types
 typedef float Flt;
 typedef float Vec[3];
@@ -63,7 +64,10 @@ extern double timeDiff(struct timespec *start, struct timespec *end);
 extern void timeCopy(struct timespec *dest, struct timespec *source);
 //-----------------------------------------------------------------------------
 
+//extern Global g;
+
 //Struct for game state 
+/*
 enum GameState {
     STATE_TITLE,
     STATE_MENU,
@@ -71,7 +75,24 @@ enum GameState {
     STATE_SETTINGS,
     STATE_EXIT
 };
+Global g;
+*/
+Global g;
 
+Global::Global()
+    : background("./assets/new.png"),
+      game("./assets/cave2.png"),
+      diamond("./assets/dia.png"),
+      spike("./assets/spikes.png")
+{
+    xres = 500;
+    yres = 650;
+    memset(keys, 0, 65536);
+    mouse_cursor_on = 1;
+    state = STATE_TITLE;
+    menuSelection = 0;
+}
+/*
 class Global {
     public:
         int xres, yres;
@@ -79,13 +100,19 @@ class Global {
         int mouse_cursor_on;
         Image background;
         Image game;
+        Image diamond;
+        Image spike;
+       // Image rock;
         //Image game;
         float scale;
         int menuSelection;
         GameState state;
 
-        Global() : background("./assets/back.png"),
-        game("./assets/game.png")
+        Global() : background("./assets/new.png"),
+        game("./assets/cave2.png")
+        diamond("./assets/dia.png"),
+      spike("./assets/spikes.png")
+       // rock("./assets/rocks.png")
 {
             xres = 500;
             yres = 650;
@@ -95,6 +122,7 @@ class Global {
             menuSelection = 0;
         }
 } g;
+ */
 
 //X Windows variables
 class X11_wrapper {
@@ -245,6 +273,7 @@ void renderGame();
 int main()
 {
     //logOpen();
+    srand(time(NULL));
     init_opengl();
     srand(time(NULL));
     clock_gettime(CLOCK_REALTIME, &timePause);
@@ -297,6 +326,8 @@ void init_opengl(void)
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_FOG);
     glDisable(GL_CULL_FACE);
+    glEnable(GL_BLEND);
+glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     //
     //Clear the screen to black
     glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -304,8 +335,14 @@ void init_opengl(void)
     glEnable(GL_TEXTURE_2D);
     initialize_fonts();
     g.background.init_gl();
+    //g.rock.init_gl();
     g.game.init_gl();
+    g.diamond.init_gl();
+    g.spike.init_gl();
     g.scale = resolution_scale(&g.background);
+    titleAnimationInit(g.xres, g.yres);
+    propsGenerateInitial();
+    //titleAnimationInit(g.xres, g.yres);
 }
 
 void normalize2d(Vec v)
@@ -392,6 +429,8 @@ int check_keys(XEvent *e)
 
                 if (g.menuSelection == 0)
                     g.state = STATE_GAME;
+                    //g.game.show(g.xres/2, g.xres/2, g.yres/2, 0.0f); 
+
 
                 else if (g.menuSelection == 1)
                     g.state = STATE_SETTINGS;
@@ -435,6 +474,9 @@ int check_keys(XEvent *e)
 
 void physics()
 {
+if (g.state == STATE_TITLE)
+        titleAnimationUpdate(gravity);
+
 if (g.state == STATE_GAME)
     gamePhysics();
 }
@@ -453,7 +495,9 @@ void render()
             break;
 
         case STATE_GAME:
+            g.game.show(g.xres/2, g.xres/2, g.yres/2, 0.0f); 
             renderGame();
+            propsRender();
             break; 
 
        /* case STATE_SETTINGS:
@@ -471,17 +515,18 @@ void renderTitle()
     Rect r;
 
     g.background.show(g.xres/2, g.xres/2, g.yres/2, 0.0f);
+    titleAnimationRender();
 
-    r.bot = g.yres/2 + 50;
+    r.bot = g.yres/2 + 40;
     r.left = g.xres/2;
     r.center = 1;
 
-    ggprint(&r, 32, 32, 0x0000ffff, "Cave In!");
-    ggprint(&r, 16, 16, 0x0000ffff,
+    ggprint(&r, 32, 32, 0xff0a0f2a, "Cave In!");
+    ggprint(&r, 16, 16, 0xff00ffff,
             "By: Fenoon Alrowhani, Henry Arinaga, Joshua Garibay");
 
     Rect r2;
-    r2.bot = 250; 
+    r2.bot = 180; 
     r2.left = g.xres/2;
     r2.center = 1;
 
