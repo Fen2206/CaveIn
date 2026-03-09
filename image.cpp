@@ -124,11 +124,7 @@ void Image::init_gl()
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
 
     unsigned char *silhouetteData;
-
-    // Treat green as transparent instead of black
-    unsigned char green[3] = {0,255,0};
-    silhouetteData = this->colorToAlpha(green);
-
+    silhouetteData = this->colorToAlpha(alphaColor);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
                  GL_RGBA, GL_UNSIGNED_BYTE, silhouetteData);
 
