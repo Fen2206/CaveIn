@@ -68,9 +68,7 @@ extern void timeCopy(struct timespec *dest, struct timespec *source);
 //-----------------------------------------------------------------------------
 
 
-// Struct for game state
-enum GameState
-{
+enum GameState {
     STATE_TITLE,
     STATE_MENU,
     STATE_GAME,
@@ -78,30 +76,33 @@ enum GameState
     STATE_EXIT
 };
 
-class Global
-{
+class Global {
 public:
     int xres, yres;
-    char keys[65536];
     int mouse_cursor_on;
     Image background;
+    Image game;
+    Image diamond;
+    Image spike;
     float scale;
     int menuSelection;
     GameState state;
 
-    Global() : background("./assets/cave2.png")
+    Global()
+        : background("./assets/new.png"),
+          game("./assets/cave2.png"),
+          diamond("./assets/dia.png"),
+          spike("./assets/spikes.png")
     {
         xres = 500;
         yres = 650;
-        //reset keys
-        memset(g_keys, 0, 65536);
         mouse_cursor_on = 1;
-        state = STATE_TITLE; // Start at game title
+        state = STATE_TITLE;
         menuSelection = 0;
-
     }
 } g;
-char g_keys[65536];
+
+char g_keys[65536] = {0};
 
 // X Windows variables
 class X11_wrapper
@@ -274,8 +275,8 @@ void renderGame();
 int main()
 {
     // logOpen();
-    init_opengl();
     srand(time(NULL));
+    init_opengl();
     clock_gettime(CLOCK_REALTIME, &timePause);
     clock_gettime(CLOCK_REALTIME, &timeStart);
     x11.set_mouse_position(200, 200);
@@ -331,6 +332,8 @@ void init_opengl(void)
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_FOG);
     glDisable(GL_CULL_FACE);
+    glEnable(GL_BLEND);
+glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     //
     // Clear the screen to black
     glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -338,7 +341,14 @@ void init_opengl(void)
     glEnable(GL_TEXTURE_2D);
     initialize_fonts();
     g.background.init_gl();
+    //g.rock.init_gl();
+    g.game.init_gl();
+    g.diamond.init_gl();
+    g.spike.init_gl();
     g.scale = resolution_scale(&g.background);
+    titleAnimationInit(g.xres, g.yres);
+    propsGenerateInitial();
+    //titleAnimationInit(g.xres, g.yres);
 }
 
 void normalize2d(Vec v)
@@ -434,9 +444,10 @@ int check_keys(XEvent *e)
         else if (g.state == STATE_MENU)
         {
 
-            if (g.menuSelection == 0)
-                g.state = STATE_GAME;
-                initGame();
+                if (g.menuSelection == 0) {
+                    g.state = STATE_GAME;
+                    initGame();
+                }
 
             else if (g.menuSelection == 1)
                 g.state = STATE_SETTINGS;
@@ -455,9 +466,8 @@ int check_keys(XEvent *e)
         }
         break;
 
-    case XK_Down:
-        if (g.state == STATE_MENU)
-        {
+            case XK_Down:
+        if (g.state == STATE_MENU) {
             g.menuSelection++;
             if (g.menuSelection > 2)
                 g.menuSelection = 0;
@@ -481,8 +491,11 @@ int check_keys(XEvent *e)
 
 void physics()
 {
-    if (g.state == STATE_GAME)
-        gamePhysics();
+if (g.state == STATE_TITLE)
+        titleAnimationUpdate(gravity);
+
+if (g.state == STATE_GAME)
+    gamePhysics();
 }
 
 void render()
@@ -499,9 +512,11 @@ void render()
         renderMenu();
         break;
 
-    case STATE_GAME:
-        renderGame();
-        break;
+        case STATE_GAME:
+            g.game.show(g.xres/2, g.xres/2, g.yres/2, 0.0f); 
+            renderGame();
+            propsRender();
+            break; 
 
         /* case STATE_SETTINGS:
              renderSettings();
@@ -517,19 +532,20 @@ void renderTitle()
 {
     Rect r;
 
-    g.background.show(g.xres / 2, g.xres / 2, g.yres / 2, 0.0f);
+    g.background.show(g.xres/2, g.xres/2, g.yres/2, 0.0f);
+    titleAnimationRender();
 
-    r.bot = g.yres / 2 + 50;
-    r.left = g.xres / 2;
+    r.bot = g.yres/2 + 40;
+    r.left = g.xres/2;
     r.center = 1;
 
-    ggprint(&r, 32, 32, 0x0000ffff, "Cave In!");
-    ggprint(&r, 16, 16, 0x0000ffff,
+    ggprint(&r, 32, 32, 0xff0a0f2a, "Cave In!");
+    ggprint(&r, 16, 16, 0xff00ffff,
             "By: Fenoon Alrowhani, Henry Arinaga, Joshua Garibay");
 
     Rect r2;
-    r2.bot = 250;
-    r2.left = g.xres / 2;
+    r2.bot = 180; 
+    r2.left = g.xres/2;
     r2.center = 1;
 
     ggprint(&r2, 24, 16, 0x00ffffff, "Press ENTER to continue");
