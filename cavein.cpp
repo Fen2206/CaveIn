@@ -68,39 +68,7 @@ extern void timeCopy(struct timespec *dest, struct timespec *source);
 //-----------------------------------------------------------------------------
 
 
-enum GameState {
-    STATE_TITLE,
-    STATE_MENU,
-    STATE_GAME,
-    STATE_SETTINGS,
-    STATE_EXIT
-};
-
-class Global {
-public:
-    int xres, yres;
-    int mouse_cursor_on;
-    Image background;
-    Image game;
-    Image diamond;
-    Image spike;
-    float scale;
-    int menuSelection;
-    GameState state;
-
-    Global()
-        : background("./assets/new.png"),
-          game("./assets/cave2.png"),
-          diamond("./assets/dia.png"),
-          spike("./assets/spikes.png")
-    {
-        xres = 500;
-        yres = 650;
-        mouse_cursor_on = 1;
-        state = STATE_TITLE;
-        menuSelection = 0;
-    }
-} g;
+Global g;
 
 char g_keys[65536] = {0};
 
