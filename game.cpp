@@ -2,6 +2,7 @@
 #include "harinaga.h"
 #include "jgaribay.h"
 #include "falrowhani.h"
+#include <cstring>
 
 Global::Global()
     : background("./assets/new.png"),
