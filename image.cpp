@@ -118,17 +118,20 @@ void Image::init_gl()
     glGenTextures(1, &texture);
     const int w = width;
     const int h = height;
+
     glBindTexture(GL_TEXTURE_2D, texture);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+
     unsigned char *silhouetteData;
-    bool is_black = !(alphaColor[0]||alphaColor[1]||alphaColor[2]);
-    if (is_black)
-        silhouetteData = this->blackToAlpha();
-    else
-        silhouetteData = this->colorToAlpha(alphaColor);
+
+    // Treat green as transparent instead of black
+    unsigned char green[3] = {0,255,0};
+    silhouetteData = this->colorToAlpha(green);
+
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0,
-            GL_RGBA, GL_UNSIGNED_BYTE, silhouetteData);
+                 GL_RGBA, GL_UNSIGNED_BYTE, silhouetteData);
+
     free(silhouetteData);
 }
 unsigned char* Image::blackToAlpha()

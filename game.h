@@ -1,12 +1,7 @@
 #ifndef GAME_H
 #define GAME_H
 
-
 #include "image.h"
-
-void initGame();
-void gamePhysics();
-void renderGame();
 
 enum GameState {
     STATE_TITLE,
@@ -31,10 +26,13 @@ public:
     int menuSelection;
     GameState state;
 
-    Global();  
+    Global();
 };
 
-
 extern Global g;
+
+void initGame();
+void gamePhysics();
+void renderGame();
 
 #endif

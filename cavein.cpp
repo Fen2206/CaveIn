@@ -450,10 +450,13 @@ int check_keys(XEvent *e)
                 }
 
             else if (g.menuSelection == 1)
+            {
                 g.state = STATE_SETTINGS;
-
+            }
             else if (g.menuSelection == 2)
+            {
                 return 1;
+            }
         }
 
         break;
@@ -518,9 +521,9 @@ void render()
             propsRender();
             break; 
 
-        /* case STATE_SETTINGS:
-             renderSettings();
-             break; */
+    case STATE_SETTINGS:
+        // renderSettings();
+        break;
 
     case STATE_EXIT:
         exit(0);
