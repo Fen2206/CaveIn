@@ -3,6 +3,20 @@
 #include "jgaribay.h"
 #include "falrowhani.h"
 
+Global::Global()
+    : background("./assets/new.png"),
+      game("./assets/cave2.png"),
+      diamond("./assets/dia.png"),
+      spike("./assets/spikes.png")
+{
+    xres = 500;
+    yres = 650;
+    memset(keys, 0, 65536);
+    mouse_cursor_on = 1;
+    state = STATE_TITLE;
+    menuSelection = 0;
+}
+
 int score = 0;
 bool gameOver = false;
 
