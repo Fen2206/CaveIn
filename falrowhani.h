@@ -18,6 +18,7 @@ void initPowerups();
 void updatePowerups();
 void drawPowerups();
 
+
 void initGems();
 void updateGems();
 void drawGems();
@@ -25,6 +26,6 @@ void drawGems();
 
 void propsGenerateInitial();
 void propsRender();
-
+void propsCheckCollisionsWithPlayer();
 
 #endif

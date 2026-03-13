@@ -17,8 +17,8 @@ enum Direction {
 };
 
 static Direction dir = DIR_S;
-static float px = 100.0f;
-static float py = 100.0f;
+float px = 100.0f;
+float py = 100.0f;
 static float speed = 4.0f;
 
 static Image southFrames[4] = {
