@@ -265,3 +265,6 @@ void propsCheckCollisionsWithPlayer()
         }
     }
 }
+
+//start scoring system 
+//if diamonds 
