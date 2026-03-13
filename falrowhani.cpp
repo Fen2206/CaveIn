@@ -9,6 +9,7 @@
 #include "image.h"
 #include "game.h"     
 #include "harinaga.h"
+#include "jgaribay.h"
 
 extern Global g;
 extern float px;
@@ -259,8 +260,10 @@ void propsCheckCollisionsWithPlayer()
             if (props[i].type == PROP_DIAMOND) {
               printf("diamond collected");
                 props[i].active = false;
+                playSound(GEM_SPARKLE);
             } else {
               printf("Hit spike!");
+                playSound(PLAYER_HURT);
             }
         }
     }

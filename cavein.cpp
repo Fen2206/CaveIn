@@ -454,10 +454,8 @@ int check_keys(XEvent *e)
         x11.show_mouse_cursor(g.mouse_cursor_on);
         break;
     case XK_s:
-        playSound(GEM_SPARKLE);
         break;
     case XK_h:
-        playSound(PLAYER_HURT);
         break;
     case XK_equal:
         break;
