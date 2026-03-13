@@ -3,12 +3,16 @@
 #include <cstdlib>
 #include <cmath>
 #include <cstdint>
+#include <cstdio>
 
 #include "falrowhani.h"
 #include "image.h"
 #include "game.h"     
+#include "harinaga.h"
 
 extern Global g;
+extern float px;
+extern float py;
 
 
 void initPowerups() {}
@@ -37,6 +41,14 @@ struct Rock {
 static Rock rocks[MAX_ROCKS];
 static int gx = 0, gy = 0;
 static int initialized = 0;
+
+static inline bool AABB(float ax, float ay, float aw, float ah,
+                        float bx, float by, float bw, float bh)
+{
+    bool collisionX = ax + aw >= bx && bx + bw >= ax;
+    bool collisionY = ay + ah >= by && by + bh >= ay;
+    return collisionX && collisionY;
+}
 
 static void spawnRock(int i)
 {
@@ -126,6 +138,7 @@ void titleAnimationRender()
 struct Prop {
     float x, y;
     int type;
+    bool active;
 };
 
 enum {
@@ -153,6 +166,7 @@ static void addProp(float x, float y, int type)
     props[propCount].x = x; //update x 
     props[propCount].y = y; //update y 
     props[propCount].type = type; //draw type
+    props[propCount].active = true;
     propCount++;
 }
 
@@ -202,6 +216,7 @@ void propsRender()
     const float spikeSize   = 28.0f;
 
     for (int i = 0; i < propCount; i++) {
+        if (!props[i].active) continue;
         float sx = props[i].x - cameraX;
         float sy = props[i].y - cameraY;
 
@@ -210,6 +225,43 @@ void propsRender()
             g.diamond.show(diamondSize, (int)sx, (int)sy, 0.0f, 0);
         } else if (props[i].type == PROP_SPIKE) {
             g.spike.show(spikeSize, (int)sx, (int)sy, 0.0f, 0);
+        }
+    }
+}
+
+void propsCheckCollisionsWithPlayer()
+{
+    const float playerW = 32.0f;
+    const float playerH = 32.0f;
+
+    const float diamondSize = 24.0f;
+    const float spikeSize   = 28.0f;
+
+    //  checkign corners
+    float pLeft = px - playerW * 0.5f;
+    float pBot  = py - playerH * 0.5f;
+
+    for (int i = 0; i < propCount; i++) {
+        if (!props[i].active) continue;
+
+        float sz;
+
+        if (props[i].type == PROP_DIAMOND)
+            sz = diamondSize;
+        else
+            sz = spikeSize;
+
+       //checking corners 
+        float dLeft = props[i].x - sz * 0.5f;
+        float dBot  = props[i].y - sz * 0.5f;
+
+        if (AABB(pLeft, pBot, playerW, playerH, dLeft, dBot, sz, sz)) {
+            if (props[i].type == PROP_DIAMOND) {
+              printf("diamond collected");
+                props[i].active = false;
+            } else {
+              printf("Hit spike!");
+            }
         }
     }
 }

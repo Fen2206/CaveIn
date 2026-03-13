@@ -487,6 +487,7 @@ void render()
             g.game.show(g.xres/2, g.xres/2, g.yres/2, 0.0f); 
             renderGame();
             propsRender();
+            propsCheckCollisionsWithPlayer();
             break; 
 
     case STATE_SETTINGS:
