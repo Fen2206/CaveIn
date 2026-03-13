@@ -247,8 +247,9 @@ int main()
     init_opengl();
     clock_gettime(CLOCK_REALTIME, &timePause);
     clock_gettime(CLOCK_REALTIME, &timeStart);
-    x11.set_mouse_position(200, 200);
+    x11.set_mouse_position(g.xres/2, g.yres/2);
     x11.show_mouse_cursor(g.mouse_cursor_on);
+    playSound(MENU_MUSIC);
     int done = 0;
     while (!done)
     {
@@ -367,7 +368,7 @@ void check_mouse(XEvent *e)
             return;
         // printf("mouse move "); fflush(stdout);
 
-        x11.set_mouse_position(200, 200);
+        x11.set_mouse_position(g.xres, g.yres);
         savex = 200;
         savey = 200;
     }
@@ -404,7 +405,7 @@ int check_keys(XEvent *e)
     switch (key)
     {
     case XK_Return:
-
+        playSound(UI_CLICK);
         if (g.state == STATE_TITLE)
         {
             g.state = STATE_MENU;
@@ -429,6 +430,7 @@ int check_keys(XEvent *e)
 
         break;
     case XK_Up:
+        playSound(UI_SWITCH);
         if (g.state == STATE_MENU)
         {
             g.menuSelection--;
@@ -437,7 +439,8 @@ int check_keys(XEvent *e)
         }
         break;
 
-            case XK_Down:
+    case XK_Down:
+        playSound(UI_SWITCH);
         if (g.state == STATE_MENU) {
             g.menuSelection++;
             if (g.menuSelection > 2)
@@ -451,6 +454,8 @@ int check_keys(XEvent *e)
         x11.show_mouse_cursor(g.mouse_cursor_on);
         break;
     case XK_s:
+        break;
+    case XK_h:
         break;
     case XK_equal:
         break;
