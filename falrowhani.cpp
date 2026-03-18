@@ -265,6 +265,8 @@ void propsCheckCollisionsWithPlayer()
                 playSound(GEM_SPARKLE);
             } else {
               printf("Hit spike!");
+              // trigger hurt effect in harinaga.cpp
+                triggerPlayerHurt();
                 playSound(PLAYER_HURT);
             }
         }

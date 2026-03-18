@@ -23,6 +23,13 @@ static float speed = 4.0f;
 static float sparkleTimer = 0.0f;
 static float sparkleAngle = 0.0f;
 static const float sparkleDuration = 0.6f;
+static bool hurtActive = false;
+static int hurtFrame = 0;
+static int hurtFrameCounter = 0;
+static const int hurtFrameCount = 6;
+static const int hurtFrameDelay = 5;
+static int hurtCooldown = 0;
+static const int hurtCooldownDuration = 30;
 
 static Image southFrames[4] = {
     Image("./assets/character_sprites/male_character/south/south_00.png"),
@@ -80,6 +87,78 @@ static Image swFrames[4] = {
     Image("./assets/character_sprites/male_character/southwest/southwest_03.png")
 };
 
+static Image hurtSouthFrames[6] = {
+    Image("./assets/character_sprites/male_character_hurt/south/south_00.png"),
+    Image("./assets/character_sprites/male_character_hurt/south/south_01.png"),
+    Image("./assets/character_sprites/male_character_hurt/south/south_02.png"),
+    Image("./assets/character_sprites/male_character_hurt/south/south_03.png"),
+    Image("./assets/character_sprites/male_character_hurt/south/south_04.png"),
+    Image("./assets/character_sprites/male_character_hurt/south/south_05.png")
+};
+
+static Image hurtNorthFrames[6] = {
+    Image("./assets/character_sprites/male_character_hurt/north/north_00.png"),
+    Image("./assets/character_sprites/male_character_hurt/north/north_01.png"),
+    Image("./assets/character_sprites/male_character_hurt/north/north_02.png"),
+    Image("./assets/character_sprites/male_character_hurt/north/north_03.png"),
+    Image("./assets/character_sprites/male_character_hurt/north/north_04.png"),
+    Image("./assets/character_sprites/male_character_hurt/north/north_05.png")
+};
+
+static Image hurtEastFrames[6] = {
+    Image("./assets/character_sprites/male_character_hurt/east/east_00.png"),
+    Image("./assets/character_sprites/male_character_hurt/east/east_01.png"),
+    Image("./assets/character_sprites/male_character_hurt/east/east_02.png"),
+    Image("./assets/character_sprites/male_character_hurt/east/east_03.png"),
+    Image("./assets/character_sprites/male_character_hurt/east/east_04.png"),
+    Image("./assets/character_sprites/male_character_hurt/east/east_05.png")
+};
+
+static Image hurtWestFrames[6] = {
+    Image("./assets/character_sprites/male_character_hurt/west/west_00.png"),
+    Image("./assets/character_sprites/male_character_hurt/west/west_01.png"),
+    Image("./assets/character_sprites/male_character_hurt/west/west_02.png"),
+    Image("./assets/character_sprites/male_character_hurt/west/west_03.png"),
+    Image("./assets/character_sprites/male_character_hurt/west/west_04.png"),
+    Image("./assets/character_sprites/male_character_hurt/west/west_05.png")
+};
+
+static Image hurtNeFrames[6] = {
+    Image("./assets/character_sprites/male_character_hurt/northeast/northeast_00.png"),
+    Image("./assets/character_sprites/male_character_hurt/northeast/northeast_01.png"),
+    Image("./assets/character_sprites/male_character_hurt/northeast/northeast_02.png"),
+    Image("./assets/character_sprites/male_character_hurt/northeast/northeast_03.png"),
+    Image("./assets/character_sprites/male_character_hurt/northeast/northeast_04.png"),
+    Image("./assets/character_sprites/male_character_hurt/northeast/northeast_05.png")
+};
+
+static Image hurtNwFrames[6] = {
+    Image("./assets/character_sprites/male_character_hurt/northwest/northwest_00.png"),
+    Image("./assets/character_sprites/male_character_hurt/northwest/northwest_01.png"),
+    Image("./assets/character_sprites/male_character_hurt/northwest/northwest_02.png"),
+    Image("./assets/character_sprites/male_character_hurt/northwest/northwest_03.png"),
+    Image("./assets/character_sprites/male_character_hurt/northwest/northwest_04.png"),
+    Image("./assets/character_sprites/male_character_hurt/northwest/northwest_05.png")
+};
+
+static Image hurtSeFrames[6] = {
+    Image("./assets/character_sprites/male_character_hurt/southeast/southeast_00.png"),
+    Image("./assets/character_sprites/male_character_hurt/southeast/southeast_01.png"),
+    Image("./assets/character_sprites/male_character_hurt/southeast/southeast_02.png"),
+    Image("./assets/character_sprites/male_character_hurt/southeast/southeast_03.png"),
+    Image("./assets/character_sprites/male_character_hurt/southeast/southeast_04.png"),
+    Image("./assets/character_sprites/male_character_hurt/southeast/southeast_05.png")
+};
+
+static Image hurtSwFrames[6] = {
+    Image("./assets/character_sprites/male_character_hurt/southwest/southwest_00.png"),
+    Image("./assets/character_sprites/male_character_hurt/southwest/southwest_01.png"),
+    Image("./assets/character_sprites/male_character_hurt/southwest/southwest_02.png"),
+    Image("./assets/character_sprites/male_character_hurt/southwest/southwest_03.png"),
+    Image("./assets/character_sprites/male_character_hurt/southwest/southwest_04.png"),
+    Image("./assets/character_sprites/male_character_hurt/southwest/southwest_05.png")
+};
+
 static int currentFrame = 0;
 static int frameCounter = 0;
 //function for player sparkle effect when collecting gems, called in falrowhani.cpp when collecting a gem
@@ -87,6 +166,17 @@ void triggerPlayerSparkle()
 {
     sparkleTimer = sparkleDuration;
     sparkleAngle = 0.0f;
+}
+//function for player hurt effect when hitting spikes, called in falrowhani.cpp when hitting a spike
+void triggerPlayerHurt()
+{
+    if (hurtActive || hurtCooldown > 0) {
+        return;
+    }
+    hurtActive = true;
+    hurtFrame = 0;
+    hurtFrameCounter = 0;
+    hurtCooldown = hurtCooldownDuration;
 }
 
 void initPlayer()
@@ -96,6 +186,10 @@ void initPlayer()
     speed = 4.0f;
     sparkleTimer = 0.0f;
     sparkleAngle = 0.0f;
+    hurtActive = false;
+    hurtFrame = 0;
+    hurtFrameCounter = 0;
+    hurtCooldown = 0;
 
     for (int i = 0; i < 4; i++) {
         southFrames[i].init_gl();
@@ -106,6 +200,17 @@ void initPlayer()
         nwFrames[i].init_gl();
         seFrames[i].init_gl();
         swFrames[i].init_gl();
+    }
+    // hurt frames
+    for (int i = 0; i < hurtFrameCount; i++) {
+        hurtSouthFrames[i].init_gl();
+        hurtNorthFrames[i].init_gl();
+        hurtEastFrames[i].init_gl();
+        hurtWestFrames[i].init_gl();
+        hurtNeFrames[i].init_gl();
+        hurtNwFrames[i].init_gl();
+        hurtSeFrames[i].init_gl();
+        hurtSwFrames[i].init_gl();
     }
 }
 void updatePlayer()
@@ -118,47 +223,62 @@ void updatePlayer()
         }
         sparkleAngle += 8.0f;
     }
+    //hurt timer update
+    if (hurtActive) {
+        hurtFrameCounter++;
+        if (hurtFrameCounter >= hurtFrameDelay) {
+            hurtFrameCounter = 0;
+            hurtFrame++;
+            if (hurtFrame >= hurtFrameCount) {
+                hurtFrame = 0;
+                hurtActive = false;
+            }
+        }
+    }
+    if (hurtCooldown > 0) {
+        hurtCooldown--;
+    }
 
     float dx = 0.0f;
     float dy = 0.0f;
     bool moving = false;
+    // input handling, if not hurt, allow movement input, if hurt, ignore input and play hurt animation
+    if (!hurtActive) {
+        if (g_keys[XK_a] || g_keys[XK_Left]) {
+            dx -= 1.0f;
+        }
 
-    if (g_keys[XK_a] || g_keys[XK_Left]) {
-        dx -= 1.0f;
-    }
+        if (g_keys[XK_d] || g_keys[XK_Right]) {
+            dx += 1.0f;
+        }
 
-    if (g_keys[XK_d] || g_keys[XK_Right]) {
-        dx += 1.0f;
-    }
+        if (g_keys[XK_w] || g_keys[XK_Up]) {
+            dy += 1.0f;
+        }
 
-    if (g_keys[XK_w] || g_keys[XK_Up]) {
-        dy += 1.0f;
-    }
+        if (g_keys[XK_s] || g_keys[XK_Down]) {
+            dy -= 1.0f;
+        }
 
-    if (g_keys[XK_s] || g_keys[XK_Down]) {
-        dy -= 1.0f;
-    }
+        if (dx != 0.0f || dy != 0.0f) {
+            moving = true;
 
-    if (dx != 0.0f || dy != 0.0f) {
-        moving = true;
+            float len = sqrt(dx*dx + dy*dy);
+            dx /= len;
+            dy /= len;
 
-        // normalize diagonal movement
-        float len = sqrt(dx*dx + dy*dy);
-        dx /= len;
-        dy /= len;
+            px += dx * speed;
+            py += dy * speed;
 
-        px += dx * speed;
-        py += dy * speed;
-
-        // determine direction
-        if (dx > 0 && dy > 0) dir = DIR_NE;
-        else if (dx < 0 && dy > 0) dir = DIR_NW;
-        else if (dx > 0 && dy < 0) dir = DIR_SE;
-        else if (dx < 0 && dy < 0) dir = DIR_SW;
-        else if (dx > 0) dir = DIR_E;
-        else if (dx < 0) dir = DIR_W;
-        else if (dy > 0) dir = DIR_N;
-        else if (dy < 0) dir = DIR_S;
+            if (dx > 0 && dy > 0) dir = DIR_NE;
+            else if (dx < 0 && dy > 0) dir = DIR_NW;
+            else if (dx > 0 && dy < 0) dir = DIR_SE;
+            else if (dx < 0 && dy < 0) dir = DIR_SW;
+            else if (dx > 0) dir = DIR_E;
+            else if (dx < 0) dir = DIR_W;
+            else if (dy > 0) dir = DIR_N;
+            else if (dy < 0) dir = DIR_S;
+        }
     }
 
     // animation
@@ -199,7 +319,8 @@ void updatePlayer()
 void drawPlayer()
 {
     Image* frames;
-
+    Image* hurtFrames;
+    // select normal and hurt frames based on direction
     switch (dir) {
         case DIR_S:  frames = southFrames; break;
         case DIR_SW: frames = swFrames; break;
@@ -211,7 +332,22 @@ void drawPlayer()
         case DIR_SE: frames = seFrames; break;
     }
 
-    frames[currentFrame].show(25.0f, (int)px, (int)py, 0.0f);
+    switch (dir) {
+        case DIR_S:  hurtFrames = hurtSouthFrames; break;
+        case DIR_SW: hurtFrames = hurtSwFrames; break;
+        case DIR_W:  hurtFrames = hurtWestFrames; break;
+        case DIR_NW: hurtFrames = hurtNwFrames; break;
+        case DIR_N:  hurtFrames = hurtNorthFrames; break;
+        case DIR_NE: hurtFrames = hurtNeFrames; break;
+        case DIR_E:  hurtFrames = hurtEastFrames; break;
+        case DIR_SE: hurtFrames = hurtSeFrames; break;
+    }
+    // draw player, if hurt active, draw hurt animation, else draw normal animation
+    if (hurtActive) {
+        hurtFrames[hurtFrame].show(25.0f, (int)px, (int)py, 0.0f);
+    } else {
+        frames[currentFrame].show(25.0f, (int)px, (int)py, 0.0f);
+    }
     // sparkle effect
     if (sparkleTimer > 0.0f) {
         const float progress = sparkleTimer / sparkleDuration;
