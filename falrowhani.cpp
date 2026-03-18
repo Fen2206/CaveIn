@@ -260,6 +260,8 @@ void propsCheckCollisionsWithPlayer()
             if (props[i].type == PROP_DIAMOND) {
               printf("diamond collected");
                 props[i].active = false;
+                // trigger sparkle effect in harinaga.cpp
+                triggerPlayerSparkle();
                 playSound(GEM_SPARKLE);
             } else {
               printf("Hit spike!");

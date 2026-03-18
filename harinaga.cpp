@@ -20,6 +20,9 @@ static Direction dir = DIR_S;
 float px = 100.0f;
 float py = 100.0f;
 static float speed = 4.0f;
+static float sparkleTimer = 0.0f;
+static float sparkleAngle = 0.0f;
+static const float sparkleDuration = 0.6f;
 
 static Image southFrames[4] = {
     Image("./assets/character_sprites/male_character/south/south_00.png"),
@@ -79,11 +82,20 @@ static Image swFrames[4] = {
 
 static int currentFrame = 0;
 static int frameCounter = 0;
+//function for player sparkle effect when collecting gems, called in falrowhani.cpp when collecting a gem
+void triggerPlayerSparkle()
+{
+    sparkleTimer = sparkleDuration;
+    sparkleAngle = 0.0f;
+}
+
 void initPlayer()
 {
     px = 100.0f;
     py = 100.0f;
     speed = 4.0f;
+    sparkleTimer = 0.0f;
+    sparkleAngle = 0.0f;
 
     for (int i = 0; i < 4; i++) {
         southFrames[i].init_gl();
@@ -98,6 +110,15 @@ void initPlayer()
 }
 void updatePlayer()
 {
+    //sparkle timer update
+    if (sparkleTimer > 0.0f) {
+        sparkleTimer -= 1.0f / 60.0f;
+        if (sparkleTimer < 0.0f) {
+            sparkleTimer = 0.0f;
+        }
+        sparkleAngle += 8.0f;
+    }
+
     float dx = 0.0f;
     float dy = 0.0f;
     bool moving = false;
@@ -191,4 +212,17 @@ void drawPlayer()
     }
 
     frames[currentFrame].show(25.0f, (int)px, (int)py, 0.0f);
+    // sparkle effect
+    if (sparkleTimer > 0.0f) {
+        const float progress = sparkleTimer / sparkleDuration;
+        const float orbitRadius = 22.0f + (1.0f - progress) * 8.0f;
+        const float sparkleSize = 5.0f + sinf(sparkleAngle * 0.08f) * 1.5f;
+
+        for (int i = 0; i < 4; i++) {
+            const float angle = sparkleAngle * 0.04f + i * 1.57079632679f;
+            const float sx = px + cosf(angle) * orbitRadius;
+            const float sy = py + sinf(angle) * orbitRadius;
+            g.diamond.show(sparkleSize, (int)sx, (int)sy, sparkleAngle + i * 45.0f, 0);
+        }
+    }
 }
