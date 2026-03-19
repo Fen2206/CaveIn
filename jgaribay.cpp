@@ -4,6 +4,7 @@
 #include "jgaribay.h"
 #include "input.h" 	// for keys array
 #include "game.h" 	// for global class
+#include "fonts.h" 	// for ggprint
 
 Openal oal;
 Sound  clickSound("./sounds/click.wav",  1.0, 1.0, 0);
@@ -141,6 +142,33 @@ void test()
 	if (shieldPowerup.isActive() && shieldPowerup.collides(playerLeft, playerBottom, pw, ph)) {
 		printf("collision!\n");
 		shieldPowerup.activate();
+	}
+}
+
+Image shieldImage("./assets/shield.png"); // use this in the shield powerup
+
+void init_misc()
+{
+	shieldImage.init_gl();
+}
+
+void renderHelp()
+{
+	Rect r;
+	r.bot = g.yres - 40.0f;
+	r.left = 50.0f;
+	r.center = 0;
+
+	const float imgWidth = 16.0 / 2;
+	shieldImage.show(imgWidth, imgWidth + 10.0f, g.yres - 10.0f - imgWidth, 0.0f);
+	const char *list[] = {
+		"Shield: resistance to the next obstacle",
+                "Speed: speed for - seconds",
+                "+1 Health: grants +1 health to player"
+	};
+
+	for (int i = 0; i < 3; i++) {
+		ggprint(&r, 12, 40, 0x00ffffff, list[i]);
 	}
 }
 

@@ -147,7 +147,7 @@ public:
     {
         // Set the window title bar.
         XMapWindow(dpy, win);
-        XStoreName(dpy, win, "Asteroids template");
+        XStoreName(dpy, win, "Cave In!");
     }
     void check_resize(XEvent *e)
     {
@@ -245,6 +245,7 @@ int main()
     // logOpen();
     srand(time(NULL));
     init_opengl();
+    init_misc();
     clock_gettime(CLOCK_REALTIME, &timePause);
     clock_gettime(CLOCK_REALTIME, &timeStart);
     x11.set_mouse_position(g.xres/2, g.yres/2);
@@ -423,7 +424,10 @@ int check_keys(XEvent *e)
             {
                 g.state = STATE_SETTINGS;
             }
-            else if (g.menuSelection == 2)
+		else if (g.menuSelection == 2) {
+			g.state = STATE_HELP;
+		}
+            else if (g.menuSelection == 3)
             {
                 return 1;
             }
@@ -441,7 +445,7 @@ int check_keys(XEvent *e)
         	scrollSound.play();
             g.menuSelection--;
             if (g.menuSelection < 0)
-                g.menuSelection = 2;
+                g.menuSelection = 3;
         }
         break;
 
@@ -449,7 +453,7 @@ int check_keys(XEvent *e)
         if (g.state == STATE_MENU) {
         	scrollSound.play();
             g.menuSelection++;
-            if (g.menuSelection > 2)
+            if (g.menuSelection > 3)
                 g.menuSelection = 0;
         }
         break;
@@ -502,6 +506,10 @@ void render()
             renderGameDisplay();
             break; 
 
+	case STATE_HELP:
+	    renderHelp();
+	    break;
+
     case STATE_SETTINGS:
         // renderSettings();
         break;
@@ -544,12 +552,15 @@ void renderMenu()
 
     ggprint(&r, 32, 32, 0x00ffffff, "MAIN MENU");
 
-    const char *options[3] = {
+    const int NOPTIONS = 4;
+    const char *options[NOPTIONS] = {
         "Start Game",
         "Settings",
-        "Exit"};
+	"How to play",
+        "Exit"
+    };
 
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < NOPTIONS; i++)
     {
         if (i == g.menuSelection)
             ggprint(&r, 24, 24, 0x0000ff00, options[i]);

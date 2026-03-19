@@ -258,16 +258,15 @@ void propsCheckCollisionsWithPlayer()
 
         if (AABB(pLeft, pBot, playerW, playerH, dLeft, dBot, sz, sz)) {
             if (props[i].type == PROP_DIAMOND) {
-              printf("diamond collected");
+              //printf("diamond collected");
                 props[i].active = false;
                 // trigger sparkle effect in harinaga.cpp
                 triggerPlayerSparkle();
                 gemSound.play();
             } else {
-              printf("Hit spike!");
+              //printf("Hit spike!");
               // trigger hurt effect in harinaga.cpp
                 triggerPlayerHurt();
-                hurtSound.play();
             }
         }
     }

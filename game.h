@@ -7,6 +7,7 @@ enum GameState {
     STATE_TITLE,
     STATE_MENU,
     STATE_GAME,
+    STATE_HELP,
     STATE_SETTINGS,
     STATE_EXIT
 };

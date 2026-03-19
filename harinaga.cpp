@@ -5,6 +5,7 @@
 #include <X11/keysym.h>
 #include "image.h"
 #include "game.h"
+#include "jgaribay.h"
 enum Direction {
     DIR_S,
     DIR_SW,
@@ -174,6 +175,7 @@ void triggerPlayerHurt()
         return;
     }
     hurtActive = true;
+    hurtSound.play();
     hurtFrame = 0;
     hurtFrameCounter = 0;
     hurtCooldown = hurtCooldownDuration;

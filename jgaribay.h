@@ -48,6 +48,8 @@ extern Sound   hurtSound;
 
 // function prototypes
 void test();
+void renderHelp();
+void init_misc();
 
 #endif
 
