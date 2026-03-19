@@ -262,12 +262,12 @@ void propsCheckCollisionsWithPlayer()
                 props[i].active = false;
                 // trigger sparkle effect in harinaga.cpp
                 triggerPlayerSparkle();
-                playSound(GEM_SPARKLE);
+                gem.play();
             } else {
               printf("Hit spike!");
               // trigger hurt effect in harinaga.cpp
                 triggerPlayerHurt();
-                playSound(PLAYER_HURT);
+                hurt.play();
             }
         }
     }

@@ -1,25 +1,34 @@
 #ifndef JGARIBAY_H
 #define JGARIBAY_H
+#include <AL/alut.h>
 
-void initObstacles();
-void updateObstacles();
-void drawObstacles();
+#define NSOUNDS 5
 
-void playSound(int);
+class Sound {
+	private:
+		ALuint source;
+		ALuint buffer;
+		float gain;
+		float pitch;
+		bool loop;
+	public:
+		Sound(const char *file, float gain, float pitch, bool loop);
+		void play();
+		~Sound();
 
-extern const char *sound_files[];
-extern int sound_loop[];
-extern float sound_gain[];
-
-enum Sound {
-    UI_CLICK = 0,
-    MENU_MUSIC,
-    UI_SWITCH,
-    GEM_SPARKLE,
-    PLAYER_HURT
 };
 
-const int NSOUNDS = 5;
+class Openal {
+	public:
+		Openal();
+		~Openal();
+};
+
+// global variable declarations
+extern Sound click, menu, scroll, gem, hurt;
+
+// function prototypes
+void test();
 
 #endif
 

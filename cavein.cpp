@@ -249,7 +249,7 @@ int main()
     clock_gettime(CLOCK_REALTIME, &timeStart);
     x11.set_mouse_position(g.xres/2, g.yres/2);
     x11.show_mouse_cursor(g.mouse_cursor_on);
-    playSound(MENU_MUSIC);
+    menu.play();
     int done = 0;
     while (!done)
     {
@@ -270,6 +270,7 @@ int main()
             physicsCountdown -= physicsRate;
         }
         render();
+	test();
         x11.swapBuffers();
     }
     cleanup_fonts();
@@ -405,7 +406,7 @@ int check_keys(XEvent *e)
     switch (key)
     {
     case XK_Return:
-        playSound(UI_CLICK);
+        click.play();
         if (g.state == STATE_TITLE)
         {
             g.state = STATE_MENU;
@@ -435,9 +436,9 @@ int check_keys(XEvent *e)
 
         break;
     case XK_Up:
-        playSound(UI_SWITCH);
         if (g.state == STATE_MENU)
         {
+        	scroll.play();
             g.menuSelection--;
             if (g.menuSelection < 0)
                 g.menuSelection = 2;
@@ -445,8 +446,8 @@ int check_keys(XEvent *e)
         break;
 
     case XK_Down:
-        playSound(UI_SWITCH);
         if (g.state == STATE_MENU) {
+        	scroll.play();
             g.menuSelection++;
             if (g.menuSelection > 2)
                 g.menuSelection = 0;
