@@ -6,18 +6,14 @@
 #include "game.h" 	// for global class
 
 Openal oal;
-Sound click ("./sounds/click.wav",  1.0, 1.0, 0);
-Sound menu  ("./sounds/menu.wav",   0.5, 1.0, 1);
-Sound scroll("./sounds/scroll.wav", 1.0, 1.0, 0);
-Sound gem   ("./sounds/gem.wav",    1.0, 1.0, 0);
-Sound hurt  ("./sounds/hurt.wav",   1.0, 1.0, 0);
+Sound  clickSound("./sounds/click.wav",  1.0, 1.0, 0);
+Sound   menuSound("./sounds/menu.wav",   0.5, 1.0, 1);
+Sound scrollSound("./sounds/scroll.wav", 1.0, 1.0, 0);
+Sound    gemSound("./sounds/gem.wav",    1.0, 1.0, 0);
+Sound   hurtSound("./sounds/hurt.wav",   1.0, 1.0, 0);
+Powerup shieldPowerup("./assets/shield.png", &gemSound, 20, 20, 32, 32);
 
-void test()
-{
-	if (g_keys[XK_y])
-		hurt.play();
-}
-
+// ----- Sound class -----
 Sound::Sound(const char *file, float gain, float pitch, bool loop)
 {
 	this->gain = gain;
@@ -47,6 +43,7 @@ Sound::~Sound()
 	alDeleteBuffers(1, &buffer); // delete the buffer
 }
 
+// ----- Openal class -----
 Openal::Openal()
 {
 	//Get started right here.
@@ -66,19 +63,84 @@ Openal::Openal()
 
 Openal::~Openal()
 {
-	//Close out OpenAL itself.
-	//unsigned int alSampleSet;
 	ALCcontext *Context;
 	ALCdevice *Device;
-	//Get active context
-	Context=alcGetCurrentContext();
-	//Get device for active context
-	Device=alcGetContextsDevice(Context);
-	//Disable context
-	alcMakeContextCurrent(NULL);
-	//Release context(s)
-	alcDestroyContext(Context);
-	//Close device
-	alcCloseDevice(Device);
+	Context = alcGetCurrentContext(); 		// get active context
+	Device = alcGetContextsDevice(Context); 	// get device for active context
+	alcMakeContextCurrent(NULL); 			// disable context
+	alcDestroyContext(Context); 			// release context(s)
+	alcCloseDevice(Device); 			// close device
+}
+
+// ----- Powerup class -----
+Powerup::Powerup(const char *img, Sound *s, float x, float y, float w, float h) : img(img)
+{
+	sound = s;
+	this->x = x;
+	this->y = y;
+	this->w = w;
+	this->h = h;
+
+	this->img.init_gl();
+	active = 1;
+}
+
+void Powerup::draw()
+{
+	// custom draw() implemented for my collision
+	glBindTexture(GL_TEXTURE_2D, img.texture);
+	glColor4f(0.0, 0.0, 0.0, 0.0);
+	glPushMatrix();
+		glTranslatef(x, y, 0.0f);
+		glEnable(GL_ALPHA_TEST);
+		glAlphaFunc(GL_GREATER, 0.0f);
+		glColor4ub(255, 255, 255, 255);
+		glBegin(GL_QUADS);
+			glTexCoord2i(0, 1); glVertex2i(0, 0);
+			glTexCoord2i(0, 0); glVertex2i(0, h);
+			glTexCoord2i(1, 0); glVertex2i(w, h);
+			glTexCoord2i(1, 1); glVertex2i(w, 0);
+		glEnd();
+	glPopMatrix();
+	glBindTexture(GL_TEXTURE_2D, 0); // unbinds texture
+}
+
+bool Powerup::collides(float px, float py, float pw, float ph)
+{
+	return px < x + w && px + pw > x && py < y + h && py + ph > y;
+}
+
+void Powerup::activate()
+{
+	sound->play();
+	active = 0;
+}
+
+void Powerup::update()
+{
+	// do everything in here maybe
+}
+
+bool Powerup::isActive()
+{
+	return active;
+}
+
+// ----- Other functions -----
+extern float px, py;
+void test()
+{
+	float pw = 32.0f;
+	float ph = 32.0f;
+	float playerLeft = px - (pw / 2);
+	float playerBottom = py - (ph / 2);
+
+	if (g_keys[XK_y])
+		hurtSound.play();
+	shieldPowerup.draw();
+	if (shieldPowerup.isActive() && shieldPowerup.collides(playerLeft, playerBottom, pw, ph)) {
+		printf("collision!\n");
+		shieldPowerup.activate();
+	}
 }
 

@@ -249,7 +249,7 @@ int main()
     clock_gettime(CLOCK_REALTIME, &timeStart);
     x11.set_mouse_position(g.xres/2, g.yres/2);
     x11.show_mouse_cursor(g.mouse_cursor_on);
-    menu.play();
+    menuSound.play();
     int done = 0;
     while (!done)
     {
@@ -406,7 +406,7 @@ int check_keys(XEvent *e)
     switch (key)
     {
     case XK_Return:
-        click.play();
+        clickSound.play();
         if (g.state == STATE_TITLE)
         {
             g.state = STATE_MENU;
@@ -438,7 +438,7 @@ int check_keys(XEvent *e)
     case XK_Up:
         if (g.state == STATE_MENU)
         {
-        	scroll.play();
+        	scrollSound.play();
             g.menuSelection--;
             if (g.menuSelection < 0)
                 g.menuSelection = 2;
@@ -447,7 +447,7 @@ int check_keys(XEvent *e)
 
     case XK_Down:
         if (g.state == STATE_MENU) {
-        	scroll.play();
+        	scrollSound.play();
             g.menuSelection++;
             if (g.menuSelection > 2)
                 g.menuSelection = 0;
