@@ -5,6 +5,7 @@
 #include "input.h" 	// for keys array
 #include "game.h" 	// for global class
 #include "fonts.h" 	// for ggprint
+#include <cstring>
 
 Openal oal;
 Sound  clickSound("./sounds/click.wav",  1.0, 1.0, 0);
@@ -13,6 +14,14 @@ Sound scrollSound("./sounds/scroll.wav", 1.0, 1.0, 0);
 Sound    gemSound("./sounds/gem.wav",    1.0, 1.0, 0);
 Sound   hurtSound("./sounds/hurt.wav",   1.0, 1.0, 0);
 Powerup shieldPowerup("./assets/shield.png", &gemSound, 20, 20, 32, 32);
+
+enum SoundType {
+	SOUND_CLICK = 0,
+	SOUND_MENU,
+	SOUND_SCROLL,
+	SOUND_GEM,
+	SOUND_HURT
+};
 
 // ----- Sound class -----
 Sound::Sound(const char *file, float gain, float pitch, bool loop)
@@ -162,13 +171,17 @@ void renderHelp()
 	const float imgWidth = 16.0 / 2;
 	shieldImage.show(imgWidth, imgWidth + 10.0f, g.yres - 10.0f - imgWidth, 0.0f);
 	const char *list[] = {
+		"Objective: collect all gems before the timer ends use powerups ",
+		"to help along the way",
 		"Shield: resistance to the next obstacle",
                 "Speed: speed for - seconds",
-                "+1 Health: grants +1 health to player"
+                "+1 Health: grants +1 health to player",
+		""
 	};
 
-	for (int i = 0; i < 3; i++) {
-		ggprint(&r, 12, 40, 0x00ffffff, list[i]);
-	}
+	int i = 0;
+	// better way to loop through menu from another lab
+	while (strlen(list[i]) > 0)
+		ggprint(&r, 10, 40, 0x00ffaaff, list[i++]);
 }
 
