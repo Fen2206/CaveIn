@@ -27,5 +27,9 @@ void drawGems();
 void propsGenerateInitial();
 void propsRender();
 void propsCheckCollisionsWithPlayer();
+void propsUpdate();
+void gamePhysics();
+void propsUpdateStreaming();
+
 
 #endif

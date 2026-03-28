@@ -16,15 +16,33 @@ public:
     int xres, yres;
     char keys[65536];
     int mouse_cursor_on;
+    float cameraX;
+    float cameraY;
 
     Image background;
     Image game;
     Image diamond;
     Image spike;
 
+    Image health5;
+    Image health4;
+    Image health3;
+    Image health2;
+    Image health1;
+    Image health0;
+
+    Image fireRock; 
+    Image fireImpact; 
+
+    int health;
+    int maxHealth;
+    int score;
+    int hurtTimer;
+
     float scale;
     int menuSelection;
     GameState state;
+
 
     Global();
 };

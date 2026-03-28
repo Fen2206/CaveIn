@@ -79,10 +79,12 @@ static Image swFrames[4] = {
 
 static int currentFrame = 0;
 static int frameCounter = 0;
+
+//background follows player 
 void initPlayer()
 {
-    px = 100.0f;
-    py = 100.0f;
+    px = g.xres * 0.5f;
+    py = 120.0f;
     speed = 4.0f;
 
     for (int i = 0; i < 4; i++) {
@@ -96,6 +98,7 @@ void initPlayer()
         swFrames[i].init_gl();
     }
 }
+
 void updatePlayer()
 {
     float dx = 0.0f;
@@ -158,20 +161,19 @@ void updatePlayer()
     }
 
     // clamp player inside screen
-    if (px < 0.0f) {
-        px = 0.0f;
+    const float center = g.xres * 0.5f;
+    const float horizontalLimit = 140.0f;
+
+    if (px < center - horizontalLimit) {
+        px = center - horizontalLimit;
     }
 
-    if (px > g.xres) {
-        px = g.xres;
+    if (px > center + horizontalLimit) {
+        px = center + horizontalLimit;
     }
 
     if (py < 0.0f) {
         py = 0.0f;
-    }
-
-    if (py > g.yres) {
-        py = g.yres;
     }
 }
 
@@ -190,5 +192,8 @@ void drawPlayer()
         case DIR_SE: frames = seFrames; break;
     }
 
-    frames[currentFrame].show(25.0f, (int)px, (int)py, 0.0f);
+    float sx = px - g.cameraX;
+    float sy = py - g.cameraY;
+
+    frames[currentFrame].show(25.0f, (int)sx, (int)sy, 0.0f);
 }
