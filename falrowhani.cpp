@@ -383,6 +383,7 @@ void propsCheckCollisionsWithPlayer()
             if (props[i].type == PROP_DIAMOND) {
                 props[i].active = false;
                 g.score += 10;
+                triggerPlayerSparkle();
                 playSound(GEM_SPARKLE);
             }
             else if (props[i].type == PROP_SPIKE) {
@@ -391,6 +392,7 @@ void propsCheckCollisionsWithPlayer()
                     if (g.health < 0)
                         g.health = 0;
                     g.hurtTimer = 30;
+                    triggerPlayerHurt();
                     playSound(PLAYER_HURT);
                 }
             }
@@ -400,6 +402,7 @@ void propsCheckCollisionsWithPlayer()
                     if (g.health < 0)
                         g.health = 0;
                     g.hurtTimer = 30;
+                    triggerPlayerHurt();
                     playSound(PLAYER_HURT);
                 }
             }
@@ -409,7 +412,14 @@ void propsCheckCollisionsWithPlayer()
 
 void gamePhysics()
 {
+    if (isLevelPassed()) {
+        return;
+    }
+
     updatePlayer();
+    updateObstacles();
+    updatePowerups();
+    updateGems();
 
     g.cameraX = 0.0f;
     g.cameraY = py - (g.yres * 0.5f);
@@ -424,4 +434,5 @@ void gamePhysics()
 
     propsUpdateStreaming();
     propsCheckCollisionsWithPlayer();
+    updateLevelTimer();
 }
