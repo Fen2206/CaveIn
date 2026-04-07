@@ -69,6 +69,12 @@ Image::Image(const char *fname)
         data = new unsigned char[n];
         for (int i=0; i<n; i++)
             data[i] = fgetc(fpi);
+        // Use the top-left pixel as the transparency key for non-JPG sprites
+        if (!is_jpg && n >= 3) {
+            alphaColor[0] = data[0];
+            alphaColor[1] = data[1];
+            alphaColor[2] = data[2];
+        }
         //printf("%s", data);
         fclose(fpi);
     } else {

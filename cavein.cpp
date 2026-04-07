@@ -438,6 +438,11 @@ int check_keys(XEvent *e)
                 return 1;
             }
         }
+        //if in game and level passes press enter to restart
+        else if (g.state == STATE_GAME && isLevelPassed())
+        {
+            initGame();
+        }
 
         break;
     case XK_Up:
@@ -508,7 +513,7 @@ void render()
             renderGame();
             propsRender();
             renderHealth();
-            //propsCheckCollisionsWithPlayer();
+            renderGameDisplay();
             break; 
 
     case STATE_SETTINGS:

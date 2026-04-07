@@ -51,6 +51,10 @@ extern Global g;
 
 void initGame();
 void gamePhysics();
+void updateLevelTimer();
 void renderGame();
+bool isLevelPassed();
+int getLevelTimeRemaining();
+void renderGameDisplay();
 
 #endif
