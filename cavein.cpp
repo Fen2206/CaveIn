@@ -235,6 +235,9 @@ void render();
 void renderTitle();
 void renderMenu();
 void renderGame();
+void renderScrollingGameBackground();
+void gamePhysics();
+void renderHealth();
 // void renderSettings();
 
 //==========================================================================
@@ -317,6 +320,14 @@ glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     g.scale = resolution_scale(&g.background);
     titleAnimationInit(g.xres, g.yres);
     propsGenerateInitial();
+    g.health5.init_gl();
+    g.health4.init_gl();
+    g.health3.init_gl();
+    g.health2.init_gl();
+    g.health1.init_gl();
+    g.health0.init_gl();
+    g.fireRock.init_gl(); 
+    g.fireImpact.init_gl();
     //titleAnimationInit(g.xres, g.yres);
 }
 
@@ -470,6 +481,9 @@ int check_keys(XEvent *e)
     return 0;
 }
 
+
+
+
 void physics()
 {
 if (g.state == STATE_TITLE)
@@ -494,10 +508,11 @@ void render()
         break;
 
         case STATE_GAME:
-            g.game.show(g.xres/2, g.xres/2, g.yres/2, 0.0f); 
+            renderScrollingGameBackground();
+           // g.game.show(g.xres/2, g.xres/2, g.yres/2, 0.0f); 
             renderGame();
             propsRender();
-            propsCheckCollisionsWithPlayer();
+            renderHealth();
             renderGameDisplay();
             break; 
 
@@ -508,6 +523,49 @@ void render()
     case STATE_EXIT:
         exit(0);
         break;
+    }
+}
+void renderHealth()
+{
+    Image *bar = &g.health0;
+
+    switch (g.health) {
+        case 5: bar = &g.health5; break;
+        case 4: bar = &g.health4; break;
+        case 3: bar = &g.health3; break;
+        case 2: bar = &g.health2; break;
+        case 1: bar = &g.health1; break;
+        case 0: bar = &g.health0; break;
+    }
+
+    bar->show(120.0f, 110, g.yres - 35, 0.0f, 0);
+
+    //g.diamond.show(18.0f, 30, g.yres - 70, 0.0f, 0);
+
+    Rect r;
+    r.left = 55;
+    r.bot = g.yres - 78;
+    r.center = 0;
+
+    //char str[64];
+    //sprintf(str, "Score: %d", g.score);
+    ggprint(&r, 16, 0x00ffffff, 0xFFFFFFFF, "Score: %d", g.score);
+}
+
+
+void renderScrollingGameBackground()
+{
+    float offsetY = std::fmod(g.cameraY, (float)g.yres);
+    if (offsetY < 0.0f) {
+        offsetY += g.yres;
+    }
+
+    float centerX = g.xres * 0.5f;
+    float centerY = g.yres * 0.5f;
+
+    for (int i = -1; i <= 1; i++) {
+        float drawY = centerY - offsetY + i * g.yres;
+        g.game.show(g.xres / 2, (int)centerX, (int)drawY, 0.0f);
     }
 }
 

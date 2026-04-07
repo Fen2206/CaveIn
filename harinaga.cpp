@@ -161,13 +161,13 @@ static Image hurtSwFrames[6] = {
 
 static int currentFrame = 0;
 static int frameCounter = 0;
-//function for player sparkle effect when collecting gems, called in falrowhani.cpp when collecting a gem
+
 void triggerPlayerSparkle()
 {
     sparkleTimer = sparkleDuration;
     sparkleAngle = 0.0f;
 }
-//function for player hurt effect when hitting spikes, called in falrowhani.cpp when hitting a spike
+
 void triggerPlayerHurt()
 {
     if (hurtActive || hurtCooldown > 0) {
@@ -178,11 +178,10 @@ void triggerPlayerHurt()
     hurtFrameCounter = 0;
     hurtCooldown = hurtCooldownDuration;
 }
-
 void initPlayer()
 {
-    px = 100.0f;
-    py = 100.0f;
+    px = g.xres * 0.5f;
+    py = 120.0f;
     speed = 4.0f;
     sparkleTimer = 0.0f;
     sparkleAngle = 0.0f;
@@ -213,6 +212,7 @@ void initPlayer()
         hurtSwFrames[i].init_gl();
     }
 }
+
 void updatePlayer()
 {
     //sparkle timer update
@@ -299,20 +299,19 @@ void updatePlayer()
     }
 
     // clamp player inside screen
-    if (px < 0.0f) {
-        px = 0.0f;
+    const float center = g.xres * 0.5f;
+    const float horizontalLimit = 140.0f;
+
+    if (px < center - horizontalLimit) {
+        px = center - horizontalLimit;
     }
 
-    if (px > g.xres) {
-        px = g.xres;
+    if (px > center + horizontalLimit) {
+        px = center + horizontalLimit;
     }
 
     if (py < 0.0f) {
         py = 0.0f;
-    }
-
-    if (py > g.yres) {
-        py = g.yres;
     }
 }
 
@@ -342,13 +341,16 @@ void drawPlayer()
         case DIR_E:  hurtFrames = hurtEastFrames; break;
         case DIR_SE: hurtFrames = hurtSeFrames; break;
     }
-    // draw player, if hurt active, draw hurt animation, else draw normal animation
+
+    float sx = px - g.cameraX;
+    float sy = py - g.cameraY;
+
     if (hurtActive) {
-        hurtFrames[hurtFrame].show(25.0f, (int)px, (int)py, 0.0f);
+        hurtFrames[hurtFrame].show(25.0f, (int)sx, (int)sy, 0.0f);
     } else {
-        frames[currentFrame].show(25.0f, (int)px, (int)py, 0.0f);
+        frames[currentFrame].show(25.0f, (int)sx, (int)sy, 0.0f);
     }
-    // sparkle effect
+
     if (sparkleTimer > 0.0f) {
         const float progress = sparkleTimer / sparkleDuration;
         const float orbitRadius = 22.0f + (1.0f - progress) * 8.0f;
@@ -356,9 +358,14 @@ void drawPlayer()
 
         for (int i = 0; i < 4; i++) {
             const float angle = sparkleAngle * 0.04f + i * 1.57079632679f;
-            const float sx = px + cosf(angle) * orbitRadius;
-            const float sy = py + sinf(angle) * orbitRadius;
-            g.diamond.show(sparkleSize, (int)sx, (int)sy, sparkleAngle + i * 45.0f, 0);
+            const float sparkleX = sx + cosf(angle) * orbitRadius;
+            const float sparkleY = sy + sinf(angle) * orbitRadius;
+            g.diamond.show(
+                sparkleSize,
+                (int)sparkleX,
+                (int)sparkleY,
+                sparkleAngle + i * 45.0f,
+                0);
         }
     }
 }
