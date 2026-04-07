@@ -23,11 +23,8 @@ void initGems() {}
 void updateGems() {}
 void drawGems() {}
 
-// --------------------------------------------------------
-// Title screen falling rocks
-// --------------------------------------------------------
 static const int   MAX_ROCKS = 500;
-static const float FLOOR_Y   = 210.0f;
+static const float FLOOR_Y   = 195.0f;
 
 static Image rock("./assets/rocks.png");
 
@@ -132,10 +129,8 @@ void titleAnimationRender()
     }
 }
 
-// --------------------------------------------------------
 // Gameplay props
 // diamonds, spikes, fire rocks
-// --------------------------------------------------------
 
 struct Prop {
     float x, y;
