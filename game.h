@@ -8,7 +8,8 @@ enum GameState {
     STATE_MENU,
     STATE_GAME,
     STATE_SETTINGS,
-    STATE_EXIT
+    STATE_EXIT,
+    STATE_END
 };
 
 class Global {
@@ -23,6 +24,9 @@ public:
     Image game;
     Image diamond;
     Image spike;
+    Image health8;
+    Image health7; 
+    Image health6;
 
     Image health5;
     Image health4;
@@ -30,6 +34,7 @@ public:
     Image health2;
     Image health1;
     Image health0;
+  
 
     Image fireRock; 
     Image fireImpact; 
@@ -56,5 +61,6 @@ void renderGame();
 bool isLevelPassed();
 int getLevelTimeRemaining();
 void renderGameDisplay();
+void renderEndScreen();
 
 #endif

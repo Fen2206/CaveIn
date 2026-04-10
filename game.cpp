@@ -11,16 +11,18 @@ Global::Global()
       game("./assets/t.png"),
       diamond("./assets/dia.png"),
       spike("./assets/spikes.png"),
-    health5("./assets/h1.png"),
-    health4("./assets/h6.png"),
-    health3("./assets/h7.png"),
-    health2("./assets/h3.png"),
-    health1("./assets/h4.png"),
-    health0("./assets/h5.png"),
-    fireRock("./assets/fire.png"),
-    fireImpact("./assets/bigger.png")
+    health8("./assets/h1.png"),
+    health7("./assets/h6.png"),
+    health6("./assets/h7.png"),
+    health5("./assets/h8.png"),
+    health4("./assets/h9.png"),
+    health3("./assets/h3.png"),
+    health2("./assets/h4.png"),
+    health1("./assets/h5.png"),
+    health0("./assets/health10.png"),
 
-      
+    fireRock("./assets/fire.png"),
+    fireImpact("./assets/bigger.png") 
     {
     xres = 500;
     yres = 570;
@@ -35,8 +37,8 @@ Global::Global()
     propsGenerateInitial();
    
 
-    maxHealth = 5;
-    health = 5;
+    maxHealth = 8;
+    health = 8;
     score = 0;
     hurtTimer = 0;
 }
@@ -64,6 +66,7 @@ void initGame()
     initObstacles();   // jgaribay.cpp
     initPowerups();    // falrowhani.cpp
     initGems();        // falrowhani.cpp
+    propsGenerateInitial();
 }
 
 void updateLevelTimer()
@@ -76,6 +79,8 @@ void updateLevelTimer()
         }
     }
 }
+
+
 
 void renderGame()
 {
@@ -124,4 +129,19 @@ void renderGameDisplay()
         ggprint(&passed, 20, 18, 0x00ffffff, "Next Level");
         ggprint(&passed, 18, 18, 0x00ffffff, "Press ENTER to continue");
     }
+}
+
+void renderEndScreen()
+{
+    Rect r;
+
+    g.background.show(g.xres/2, g.xres/2, g.yres/2, 0.0f);
+
+    r.left = g.xres / 2;
+    r.bot = g.yres / 2 + 40;
+    r.center = 1;
+
+    ggprint(&r, 30, 18, 0x00ff4444, "You Lost!");
+    ggprint(&r, 20, 18, 0x00ffffff, "Score: %d", g.score);
+    ggprint(&r, 18, 18, 0x00ffffff, "Press ENTER to continue");
 }

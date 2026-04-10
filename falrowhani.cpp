@@ -23,8 +23,30 @@ void initGems() {}
 void updateGems() {}
 void drawGems() {}
 
-static const int   MAX_ROCKS = 500;
-static const float FLOOR_Y   = 195.0f;
+static inline bool AABB(float ax, float ay, float aw, float ah,
+                        float bx, float by, float bw, float bh)
+{
+    bool collisionX = ax + aw >= bx && bx + bw >= ax;
+    bool collisionY = ay + ah >= by && by + bh >= ay;
+    return collisionX && collisionY;
+}
+
+static const int   MAX_ROCKS = 50;
+static const float FLOOR_Y   = 130.0f;
+
+static Image caveTitle("./assets/cave.png");
+static Image inTitle("./assets/in.png");
+
+static float caveX, caveY;
+static float caveTargetX, caveTargetY;
+static float caveW = 320.0f;
+
+static float inX, inY;
+static float inTargetX, inTargetY;
+static float inW = 120.0f;
+
+static bool caveArrived = false;
+static bool inArrived   = false;
 
 static Image rock("./assets/rocks.png");
 
@@ -41,13 +63,6 @@ static Rock rocks[MAX_ROCKS];
 static int gx = 0, gy = 0;
 static int initialized = 0;
 
-static inline bool AABB(float ax, float ay, float aw, float ah,
-                        float bx, float by, float bw, float bh)
-{
-    bool collisionX = ax + aw >= bx && bx + bw >= ax;
-    bool collisionY = ay + ah >= by && by + bh >= ay;
-    return collisionX && collisionY;
-}
 
 static void spawnRock(int i)
 {
@@ -78,6 +93,26 @@ void titleAnimationInit(int xres, int yres)
     }
 
     rock.init_gl();
+    caveTitle.init_gl();
+    inTitle.init_gl();
+
+    // Final resting position of CAVE
+    caveTargetX = gx / 2.0f;
+    caveTargetY = gy / 2.0f + 120.0f;
+
+    // Final resting position of IN, centered below CAVE
+    inTargetX = gx / 2.0f;
+    inTargetY = caveTargetY - 85.0f;
+
+    // Start offscreen
+    caveX = gx + caveW;
+    caveY = caveTargetY;
+
+    inX = -inW;
+    inY = inTargetY;
+
+    caveArrived = false;
+    inArrived = false;
 }
 
 void titleAnimationUpdate(float gravity)
@@ -112,6 +147,23 @@ void titleAnimationUpdate(float gravity)
             rocks[i].settled = true;
         }
     }
+
+    // Move CAVE in from the right first
+    if (!caveArrived) {
+        caveX -= 12.0f;
+        if (caveX <= caveTargetX) {
+            caveX = caveTargetX;
+            caveArrived = true;
+        }
+    }
+  // move IN from the left
+    else if (!inArrived) {
+        inX += 12.0f;
+        if (inX >= inTargetX) {
+            inX = inTargetX;
+            inArrived = true;
+        }
+    }
 }
 
 void titleAnimationRender()
@@ -127,6 +179,9 @@ void titleAnimationRender()
                   rocks[i].rot,
                   0);
     }
+
+    caveTitle.show((int)caveW, (int)caveX, (int)caveY, 0.0f, 0);
+    inTitle.show((int)inW, (int)inX, (int)inY, 0.0f, 0);
 }
 
 // Gameplay props
@@ -157,8 +212,8 @@ static const int   TARGET_PER_CHUNK = 6;
 static int highestChunkGenerated = -1;
 
 static int fireRockSpawnTimer = 0;
-static const float FIRE_ROCK_SIZE   = 30.0f;
-static const float FIRE_IMPACT_SIZE = 40.0f;
+static const float FIRE_ROCK_SIZE   = 22.0f;
+static const float FIRE_IMPACT_SIZE = 25.0f;
 
 static void addProp(float x, float y, int type)
 {
@@ -321,8 +376,8 @@ void propsUpdateStreaming()
 
 void propsRender()
 {
-    const float diamondSize = 24.0f;
-    const float spikeSize   = 28.0f;
+    const float diamondSize = 16.0f;
+    const float spikeSize   = 20.0f;
 
     for (int i = 0; i < propCount; i++) {
         if (!props[i].active)
@@ -386,17 +441,17 @@ void propsCheckCollisionsWithPlayer()
                     g.health--;
                     if (g.health < 0)
                         g.health = 0;
-                    g.hurtTimer = 30;
+                    g.hurtTimer = 100;
                     triggerPlayerHurt();
                     playSound(PLAYER_HURT);
                 }
             }
             else if (props[i].type == PROP_FIRE_ROCK) {
                 if (g.hurtTimer <= 0) {
-                    g.health -= 2;
+                    g.health -= 1;
                     if (g.health < 0)
                         g.health = 0;
-                    g.hurtTimer = 30;
+                    g.hurtTimer = 100;
                     triggerPlayerHurt();
                     playSound(PLAYER_HURT);
                 }

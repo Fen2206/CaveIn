@@ -320,6 +320,9 @@ glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     g.scale = resolution_scale(&g.background);
     titleAnimationInit(g.xres, g.yres);
     propsGenerateInitial();
+    g.health8.init_gl();
+    g.health7.init_gl();
+    g.health6.init_gl();
     g.health5.init_gl();
     g.health4.init_gl();
     g.health3.init_gl();
@@ -421,6 +424,9 @@ int check_keys(XEvent *e)
         {
             g.state = STATE_MENU;
         }
+         else if (g.state == STATE_END) {
+            renderEndScreen();
+}
         else if (g.state == STATE_MENU)
         {
 
@@ -443,6 +449,12 @@ int check_keys(XEvent *e)
         {
             initGame();
         }
+
+        if (g.state == STATE_END && key == XK_Return) {
+        initGame();
+        g.state = STATE_GAME;
+}
+
 
         break;
     case XK_Up:
@@ -506,6 +518,9 @@ void render()
     case STATE_MENU:
         renderMenu();
         break;
+    case STATE_END:
+        renderEndScreen();
+        break;
 
         case STATE_GAME:
             renderScrollingGameBackground();
@@ -527,15 +542,23 @@ void render()
 }
 void renderHealth()
 {
+    extern bool gameOver;
     Image *bar = &g.health0;
 
     switch (g.health) {
+        case 8: bar = &g.health8; break;
+        case 7: bar = &g.health7; break;
+        case 6: bar = &g.health6; break;
         case 5: bar = &g.health5; break;
         case 4: bar = &g.health4; break;
         case 3: bar = &g.health3; break;
         case 2: bar = &g.health2; break;
         case 1: bar = &g.health1; break;
-        case 0: bar = &g.health0; break;
+        case 0:
+            bar = &g.health0;
+            gameOver = true;
+            g.state = STATE_END;
+            break;
     }
 
     bar->show(120.0f, 110, g.yres - 35, 0.0f, 0);
@@ -568,7 +591,6 @@ void renderScrollingGameBackground()
         g.game.show(g.xres / 2, (int)centerX, (int)drawY, 0.0f);
     }
 }
-
 void renderTitle()
 {
     Rect r;
@@ -576,16 +598,15 @@ void renderTitle()
     g.background.show(g.xres/2, g.xres/2, g.yres/2, 0.0f);
     titleAnimationRender();
 
-    r.bot = g.yres/2 + 40;
+    r.bot = g.yres/2 - 10;
     r.left = g.xres/2;
     r.center = 1;
 
-    ggprint(&r, 32, 32, 0xff0a0f2a, "Cave In!");
-    ggprint(&r, 16, 16, 0xff00ffff,
-            "By: Fenoon Alrowhani, Henry Arinaga, Joshua Garibay");
+   // ggprint(&r, 16, 16, 0xff00ffff,
+    //        "By: Fenoon Alrowhani, Henry Arinaga, Joshua Garibay");
 
     Rect r2;
-    r2.bot = 180; 
+    r2.bot = 180;
     r2.left = g.xres/2;
     r2.center = 1;
 
