@@ -443,7 +443,7 @@ void propsCheckCollisionsWithPlayer()
                         g.health = 0;
                     g.hurtTimer = 100;
                     triggerPlayerHurt();
-		    hurtSound.play()
+		    hurtSound.play();
                 }
             }
             else if (props[i].type == PROP_FIRE_ROCK) {
@@ -453,7 +453,7 @@ void propsCheckCollisionsWithPlayer()
                         g.health = 0;
                     g.hurtTimer = 100;
                     triggerPlayerHurt();
-		    hurtSound.play()
+		    hurtSound.play();
                 }
             }
         }
