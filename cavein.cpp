@@ -235,6 +235,9 @@ void render();
 void renderTitle();
 void renderMenu();
 void renderGame();
+void renderScrollingGameBackground();
+void gamePhysics();
+void renderHealth();
 // void renderSettings();
 
 //==========================================================================
@@ -319,6 +322,17 @@ glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     g.scale = resolution_scale(&g.background);
     titleAnimationInit(g.xres, g.yres);
     propsGenerateInitial();
+    g.health8.init_gl();
+    g.health7.init_gl();
+    g.health6.init_gl();
+    g.health5.init_gl();
+    g.health4.init_gl();
+    g.health3.init_gl();
+    g.health2.init_gl();
+    g.health1.init_gl();
+    g.health0.init_gl();
+    g.fireRock.init_gl(); 
+    g.fireImpact.init_gl();
     //titleAnimationInit(g.xres, g.yres);
 }
 
@@ -412,6 +426,9 @@ int check_keys(XEvent *e)
         {
             g.state = STATE_MENU;
         }
+         else if (g.state == STATE_END) {
+            renderEndScreen();
+}
         else if (g.state == STATE_MENU)
         {
 
@@ -437,6 +454,12 @@ int check_keys(XEvent *e)
         {
             initGame();
         }
+
+        if (g.state == STATE_END && key == XK_Return) {
+        initGame();
+        g.state = STATE_GAME;
+}
+
 
         break;
     case XK_Up:
@@ -475,6 +498,9 @@ int check_keys(XEvent *e)
     return 0;
 }
 
+
+
+
 void physics()
 {
 if (g.state == STATE_TITLE)
@@ -497,12 +523,16 @@ void render()
     case STATE_MENU:
         renderMenu();
         break;
+    case STATE_END:
+        renderEndScreen();
+        break;
 
         case STATE_GAME:
-            g.game.show(g.xres/2, g.xres/2, g.yres/2, 0.0f); 
+            renderScrollingGameBackground();
+           // g.game.show(g.xres/2, g.xres/2, g.yres/2, 0.0f); 
             renderGame();
             propsRender();
-            propsCheckCollisionsWithPlayer();
+            renderHealth();
             renderGameDisplay();
             break; 
 
@@ -519,7 +549,57 @@ void render()
         break;
     }
 }
+void renderHealth()
+{
+    extern bool gameOver;
+    Image *bar = &g.health0;
 
+    switch (g.health) {
+        case 8: bar = &g.health8; break;
+        case 7: bar = &g.health7; break;
+        case 6: bar = &g.health6; break;
+        case 5: bar = &g.health5; break;
+        case 4: bar = &g.health4; break;
+        case 3: bar = &g.health3; break;
+        case 2: bar = &g.health2; break;
+        case 1: bar = &g.health1; break;
+        case 0:
+            bar = &g.health0;
+            gameOver = true;
+            g.state = STATE_END;
+            break;
+    }
+
+    bar->show(120.0f, 110, g.yres - 35, 0.0f, 0);
+
+    //g.diamond.show(18.0f, 30, g.yres - 70, 0.0f, 0);
+
+    Rect r;
+    r.left = 55;
+    r.bot = g.yres - 78;
+    r.center = 0;
+
+    //char str[64];
+    //sprintf(str, "Score: %d", g.score);
+    ggprint(&r, 16, 0x00ffffff, 0xFFFFFFFF, "Score: %d", g.score);
+}
+
+
+void renderScrollingGameBackground()
+{
+    float offsetY = std::fmod(g.cameraY, (float)g.yres);
+    if (offsetY < 0.0f) {
+        offsetY += g.yres;
+    }
+
+    float centerX = g.xres * 0.5f;
+    float centerY = g.yres * 0.5f;
+
+    for (int i = -1; i <= 1; i++) {
+        float drawY = centerY - offsetY + i * g.yres;
+        g.game.show(g.xres / 2, (int)centerX, (int)drawY, 0.0f);
+    }
+}
 void renderTitle()
 {
     Rect r;
@@ -527,16 +607,15 @@ void renderTitle()
     g.background.show(g.xres/2, g.xres/2, g.yres/2, 0.0f);
     titleAnimationRender();
 
-    r.bot = g.yres/2 + 40;
+    r.bot = g.yres/2 - 10;
     r.left = g.xres/2;
     r.center = 1;
 
-    ggprint(&r, 32, 32, 0xff0a0f2a, "Cave In!");
-    ggprint(&r, 16, 16, 0xff00ffff,
-            "By: Fenoon Alrowhani, Henry Arinaga, Joshua Garibay");
+   // ggprint(&r, 16, 16, 0xff00ffff,
+    //        "By: Fenoon Alrowhani, Henry Arinaga, Joshua Garibay");
 
     Rect r2;
-    r2.bot = 180; 
+    r2.bot = 180;
     r2.left = g.xres/2;
     r2.center = 1;
 

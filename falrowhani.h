@@ -12,6 +12,7 @@ static inline float frand01() {
 void titleAnimationInit(int xres, int yres);
 void titleAnimationUpdate(float gravity);
 void titleAnimationRender();
+//static void settleRock(int i, float newY);
 
 
 void initPowerups();
@@ -27,5 +28,9 @@ void drawGems();
 void propsGenerateInitial();
 void propsRender();
 void propsCheckCollisionsWithPlayer();
+void propsUpdate();
+void gamePhysics();
+void propsUpdateStreaming();
+
 
 #endif
