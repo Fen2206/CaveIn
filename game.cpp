@@ -44,6 +44,8 @@ Global::Global()
     nframes = 0;
     fps = 0;
     showfps = 1;
+    shieldTimer = 0;
+    debugMode = 0;
 }
 
 int score = 0;
@@ -56,6 +58,8 @@ void checkCollisions();
 
 void initGame()
 {
+	menuSound.stop();
+    gameSound.play();
     score = 0;
     gameOver = false;
     levelTimerFrames = levelDurationFrames;
@@ -89,6 +93,7 @@ void renderGame()
    // g.gameBackground.show(g.xres/2, g.xres/2, g.yres/2, 0.0f);
     drawGems();
     drawPowerups();
+    drawStatusEffects();
     drawPlayer();
 }
 
@@ -135,6 +140,12 @@ void renderGameDisplay()
 void renderEndScreen()
 {
     Rect r;
+    static bool soundFlag;
+    if (!soundFlag) {
+    gameSound.stop();
+	overSound.play();
+	soundFlag = 1;
+    }
 
     g.background.show(g.xres/2, g.xres/2, g.yres/2, 0.0f);
 
@@ -146,3 +157,4 @@ void renderEndScreen()
     ggprint(&r, 20, 18, 0x00ffffff, "Score: %d", g.score);
     ggprint(&r, 18, 18, 0x00ffffff, "Press ENTER to continue");
 }
+

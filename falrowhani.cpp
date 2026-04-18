@@ -342,7 +342,8 @@ void propsUpdateStreaming()
     fireRockSpawnTimer++;
     if (fireRockSpawnTimer >= 45) {
         fireRockSpawnTimer = 0;
-        spawnFireRockFromSky();
+	if (!g.debugMode)
+        	spawnFireRockFromSky();
     }
 
     // update fire rocks
@@ -437,7 +438,7 @@ void propsCheckCollisionsWithPlayer()
 		gemSound.play();
             }
             else if (props[i].type == PROP_SPIKE) {
-                if (g.hurtTimer <= 0) {
+		    if (g.hurtTimer <= 0 && g.shieldTimer <= 0) {
                     g.health--;
                     if (g.health < 0)
                         g.health = 0;
@@ -479,6 +480,9 @@ void gamePhysics()
 
     if (g.hurtTimer > 0) {
         g.hurtTimer--;
+    }
+    if (g.shieldTimer > 0) {
+        g.shieldTimer--;
     }
 
     propsUpdateStreaming();

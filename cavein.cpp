@@ -506,6 +506,10 @@ int check_keys(XEvent *e)
 	case XK_f:
 		g.showfps = !g.showfps;
 		break;
+	case XK_i:
+		g.debugMode = !g.debugMode;
+		printf("debug mode: %i", g.debugMode);
+		break;
     }
     return 0;
 }

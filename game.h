@@ -47,10 +47,12 @@ public:
     int maxHealth;
     int score;
     int hurtTimer;
+    int shieldTimer;
 
     float scale;
     int menuSelection;
     GameState state;
+    int debugMode;
 
 
     Global();

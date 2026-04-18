@@ -27,6 +27,7 @@ class Sound {
 	public:
 		Sound(const char *file, float gain, float pitch, bool loop);
 		void play();
+		void stop();
 		~Sound();
 
 };
@@ -39,32 +40,37 @@ class Openal {
 
 class Powerup {
 	private:
-		PowerupType type;
-		Image img;
-		Sound *sound;
 		float x, y;
 		float w, h;
 		bool active;
+
+		PowerupType type;
+		Image *image;
+		Sound *sound;
 	public:
 		Powerup(PowerupType type, const char *, Sound *sound, float x, float y, float w, float h);
+		Powerup(PowerupType type, Image *image, Sound *sound, float x, float y, float w, float h);
 		void draw();
 		bool collides(float px, float py, float pw, float ph);
 		void activate();
-		void update();
+		void update(float px, float py, float pw, float ph);
 		bool isActive();
 };
 
 // global variable declarations
 extern Sound  clickSound;
 extern Sound   menuSound;
+extern Sound   gameSound;
 extern Sound scrollSound;
 extern Sound    gemSound;
 extern Sound   hurtSound;
+extern Sound   overSound;
 
 // function prototypes
 void test();
 void renderHelp();
 void init_misc();
+void drawStatusEffects();
 
 #endif
 
