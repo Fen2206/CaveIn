@@ -13,15 +13,8 @@ Sound   menuSound("./sounds/menu.wav",   0.5, 1.0, 1);
 Sound scrollSound("./sounds/scroll.wav", 1.0, 1.0, 0);
 Sound    gemSound("./sounds/gem.wav",    1.0, 1.0, 0);
 Sound   hurtSound("./sounds/hurt.wav",   1.0, 1.0, 0);
-Powerup shieldPowerup("./assets/shield.png", &gemSound, 20, 20, 32, 32);
-
-enum SoundType {
-	SOUND_CLICK = 0,
-	SOUND_MENU,
-	SOUND_SCROLL,
-	SOUND_GEM,
-	SOUND_HURT
-};
+Powerup shieldPowerup(POWER_SHIELD, "./assets/shield.png", &gemSound, 100, 100, 32, 32);
+Image shieldImage("./assets/shield.png"); // use this in the shield powerup
 
 // ----- Sound class -----
 Sound::Sound(const char *file, float gain, float pitch, bool loop)
@@ -83,8 +76,11 @@ Openal::~Openal()
 }
 
 // ----- Powerup class -----
-Powerup::Powerup(const char *img, Sound *s, float x, float y, float w, float h) : img(img)
+// note: two options, either make inherited classes for each type of powerup
+// or make an enum instead and use that
+Powerup::Powerup(PowerupType type, const char *img, Sound *s, float x, float y, float w, float h) : img(img)
 {
+	this->type = type;
 	sound = s;
 	this->x = x;
 	this->y = y;
@@ -153,8 +149,6 @@ void test()
 		shieldPowerup.activate();
 	}
 }
-
-Image shieldImage("./assets/shield.png"); // use this in the shield powerup
 
 void init_misc()
 {

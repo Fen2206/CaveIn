@@ -467,7 +467,6 @@ void gamePhysics()
     }
 
     updatePlayer();
-    updateObstacles();
     updatePowerups();
     updateGems();
 

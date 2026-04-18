@@ -20,6 +20,9 @@ public:
     int mouse_cursor_on;
     float cameraX;
     float cameraY;
+    int fps;
+    int nframes;
+    bool showfps;
 
     Image background;
     Image game;

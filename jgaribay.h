@@ -3,6 +3,20 @@
 #include <AL/alut.h>
 #include "image.h"
 
+enum SoundType {
+	SOUND_CLICK = 0,
+	SOUND_MENU,
+	SOUND_SCROLL,
+	SOUND_GEM,
+	SOUND_HURT
+};
+
+enum PowerupType {
+	POWER_SPEED,
+	POWER_SHIELD,
+	POWER_HEART
+};
+
 class Sound {
 	private:
 		ALuint source;
@@ -25,13 +39,14 @@ class Openal {
 
 class Powerup {
 	private:
+		PowerupType type;
 		Image img;
 		Sound *sound;
 		float x, y;
 		float w, h;
 		bool active;
 	public:
-		Powerup(const char *, Sound *sound, float x, float y, float w, float h);
+		Powerup(PowerupType type, const char *, Sound *sound, float x, float y, float w, float h);
 		void draw();
 		bool collides(float px, float py, float pw, float ph);
 		void activate();

@@ -41,6 +41,9 @@ Global::Global()
     health = 8;
     score = 0;
     hurtTimer = 0;
+    nframes = 0;
+    fps = 0;
+    showfps = 1;
 }
 
 int score = 0;

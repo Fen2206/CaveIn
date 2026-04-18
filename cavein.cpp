@@ -255,6 +255,7 @@ int main()
     x11.show_mouse_cursor(g.mouse_cursor_on);
     menuSound.play();
     int done = 0;
+    int seconds = time(NULL);
     while (!done)
     {
         while (x11.getXPending())
@@ -274,8 +275,16 @@ int main()
             physicsCountdown -= physicsRate;
         }
         render();
+	++g.nframes;
+	int tmp = time(NULL);
+	if (seconds != tmp) {
+		g.fps = g.nframes;
+		g.nframes = 0;
+		seconds = tmp;
+	}
 	test();
         x11.swapBuffers();
+	usleep(200); 		// pause to let X11 work better
     }
     cleanup_fonts();
     // logClose();
@@ -494,6 +503,9 @@ int check_keys(XEvent *e)
         break;
     case XK_minus:
         break;
+	case XK_f:
+		g.showfps = !g.showfps;
+		break;
     }
     return 0;
 }
@@ -575,13 +587,15 @@ void renderHealth()
     //g.diamond.show(18.0f, 30, g.yres - 70, 0.0f, 0);
 
     Rect r;
-    r.left = 55;
+    r.left = 20;
     r.bot = g.yres - 78;
     r.center = 0;
 
     //char str[64];
     //sprintf(str, "Score: %d", g.score);
-    ggprint(&r, 16, 0x00ffffff, 0xFFFFFFFF, "Score: %d", g.score);
+    ggprint(&r, 16, 22, 0xFFFFFFFF, "Score: %d", g.score);
+    if (g.showfps)
+    	ggprint(&r, 16, 22, 0x00ffffff, "<f> fps: %i", g.fps);
 }
 
 
