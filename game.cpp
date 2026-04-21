@@ -33,10 +33,13 @@ Global::Global()
     fps=0;
     frameCount=0;
     final=0;
+    endSelection = 0;
+
 
 
     cameraX = 0.0f;
     cameraY = 0.0f;
+    level = 1;
     propsGenerateInitial();
    
 
@@ -46,6 +49,11 @@ Global::Global()
     hurtTimer = 0;
     show_warning = 0;
     warning_timer = 0;
+    nframes = 0;
+    fps = 0;
+    showfps = 1;
+    shieldTimer = 0;
+    debugMode = 0;
 
 }
 
@@ -59,17 +67,23 @@ void checkCollisions();
 
 void initGame()
 {
-    score = 0;
+	menuSound.stop();
+    gameSound.play();
     gameOver = false;
     levelTimerFrames = levelDurationFrames;
     levelPassed = false;
 
+    if (g.level < 1)
+        g.level = 1;
+    if (g.level == 1) {
+        score = 0;
+        g.score = 0;
+    }
+
     g.health = g.maxHealth;
-    g.score = 0;
     g.hurtTimer = 0;
 
     initPlayer();      // harinaga.cpp
-    initObstacles();   // jgaribay.cpp
     initPowerups();    // falrowhani.cpp
     initGems();        // falrowhani.cpp
     propsGenerateInitial();
@@ -91,9 +105,9 @@ void updateLevelTimer()
 void renderGame()
 {
    // g.gameBackground.show(g.xres/2, g.xres/2, g.yres/2, 0.0f);
-    drawObstacles();
     drawGems();
     drawPowerups();
+    drawStatusEffects();
     drawPlayer();
 }
 
@@ -125,6 +139,7 @@ void renderGameDisplay()
     char timerText[64];
     snprintf(timerText, sizeof(timerText), "Time: %d:%02d", minutes, seconds);
     ggprint(&r, 24, 16, 0x00ffffff, timerText);
+    ggprint(&r, 20, 16, 0x00ffffff, "Level: %d", g.level);
 
     if (levelPassed) {
         Rect passed;
@@ -149,5 +164,17 @@ void renderEndScreen()
 
     ggprint(&r, 30, 18, 0x00ff4444, "You Lost!");
     ggprint(&r, 20, 18, 0x00ffffff, "Score: %d", g.score);
-    ggprint(&r, 18, 18, 0x00ffffff, "Press ENTER to continue");
+
+    const int NOPTIONS = 2;
+    const char *options[NOPTIONS] = {
+        "Retry",
+        "Main Menu"
+    };
+
+    for (int i = 0; i < NOPTIONS; i++) {
+        if (i == g.endSelection)
+            ggprint(&r, 20, 18, 0x0000ff00, options[i]);
+        else
+            ggprint(&r, 20, 18, 0x00ffffff, options[i]);
+    }
 }

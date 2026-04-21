@@ -7,6 +7,7 @@ enum GameState {
     STATE_TITLE,
     STATE_MENU,
     STATE_GAME,
+    STATE_HELP,
     STATE_SETTINGS,
     STATE_EXIT,
     STATE_END
@@ -22,6 +23,9 @@ public:
     int fps;
     int frameCount;
     time_t final; 
+    int nframes;
+    bool showfps;
+
 
     Image background;
     Image game;
@@ -48,11 +52,13 @@ public:
     int hurtTimer;
     int show_warning;
     int warning_timer;
-
-
+    int shieldTimer;
+    int level;
     float scale;
     int menuSelection;
+    int endSelection;
     GameState state;
+    int debugMode;
 
 
     Global();
