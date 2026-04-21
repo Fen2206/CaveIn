@@ -244,17 +244,17 @@ static float getFireRockDriftSpeed()
 
 static float getFireRockMinFallSpeed()
 {
-    return 1.1f + getDifficultyStep() * 0.25f;
+    return 1.45f + getDifficultyStep() * 0.25f;
 }
 
 static float getFireRockFallSpeedRange()
 {
-    return 0.8f + getDifficultyStep() * 0.15f;
+    return 0.95f + getDifficultyStep() * 0.15f;
 }
 
 static float getFireRockGravity()
 {
-    return 0.04f + getDifficultyStep() * 0.01f;
+    return 0.055f + getDifficultyStep() * 0.01f;
 }
 
 static float getSpikeChance()

@@ -52,7 +52,7 @@ Global::Global()
 
 int score = 0;
 bool gameOver = false;
-static const int levelDurationFrames = 90 * 60;
+static const int levelDurationFrames = 30 * 60;
 static int levelTimerFrames = levelDurationFrames;
 static bool levelPassed = false;
 
