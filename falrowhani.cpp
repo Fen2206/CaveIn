@@ -15,8 +15,8 @@ extern Global g;
 extern float px;
 extern float py;
 
-static const int SPIKE_HURT_COOLDOWN = 12;
-static const int FIRE_ROCK_HURT_COOLDOWN = 30;
+static const int SPIKE_HURT_COOLDOWN = 60;
+static const int FIRE_ROCK_HURT_COOLDOWN = 45;
 
 void initPowerups() {}
 void updatePowerups() {}
@@ -193,6 +193,7 @@ void titleAnimationRender()
 struct Prop {
     float x, y;
     float vx, vy;
+    float impactX, impactY;
     int type;
     bool active;
     bool landed;
@@ -217,6 +218,90 @@ static int highestChunkGenerated = -1;
 static int fireRockSpawnTimer = 0;
 static const float FIRE_ROCK_SIZE   = 22.0f;
 static const float FIRE_IMPACT_SIZE = 25.0f;
+static const float FIRE_ROCK_WARNING_DISTANCE = 220.0f;
+
+static int getDifficultyStep()
+{
+    int step = g.level - 1;
+    if (step < 0)
+        step = 0;
+    if (step > 4)
+        step = 4;
+    return step;
+}
+
+static int getFireRockSpawnInterval()
+{
+    int interval = 100 - getDifficultyStep() * 15;
+    if (interval < 45)
+        interval = 45;
+    return interval;
+}
+
+static float getFireRockDriftSpeed()
+{
+    return 0.25f + getDifficultyStep() * 0.05f;
+}
+
+static float getFireRockMinFallSpeed()
+{
+    return 1.45f + getDifficultyStep() * 0.25f;
+}
+
+static float getFireRockFallSpeedRange()
+{
+    return 0.95f + getDifficultyStep() * 0.15f;
+}
+
+static float getFireRockGravity()
+{
+    return 0.055f + getDifficultyStep() * 0.01f;
+}
+
+static float getSpikeChance()
+{
+    return 0.25f + getDifficultyStep() * 0.05f;
+}
+
+static int getFireRockDamage()
+{
+    return (g.level >= 4) ? 2 : 1;
+}
+
+static void drawFireRockShadow(float x, float y, float impactY)
+{
+    float distance = y - impactY;
+    if (distance < 0.0f)
+        distance = 0.0f;
+    if (distance > FIRE_ROCK_WARNING_DISTANCE)
+        distance = FIRE_ROCK_WARNING_DISTANCE;
+
+    float warningProgress = 1.0f - (distance / FIRE_ROCK_WARNING_DISTANCE);
+    float radiusX = 11.0f + warningProgress * 12.0f;
+    float radiusY = 4.0f + warningProgress * 5.0f;
+    float alpha = 0.18f + warningProgress * 0.32f;
+    float sx = x - g.cameraX;
+    float sy = impactY - g.cameraY;
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glDisable(GL_TEXTURE_2D);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glColor4f(0.0f, 0.0f, 0.0f, alpha);
+
+    glBegin(GL_TRIANGLE_FAN);
+        glVertex2f(sx, sy);
+        for (int i = 0; i <= 32; i++) {
+            float angle = i * 6.28318530718f / 32.0f;
+            glVertex2f(sx + cosf(angle) * radiusX,
+                       sy + sinf(angle) * radiusY);
+        }
+    glEnd();
+
+    glColor4ub(255, 255, 255, 255);
+    glDisable(GL_BLEND);
+    glEnable(GL_TEXTURE_2D);
+}
 
 static void addProp(float x, float y, int type)
 {
@@ -226,13 +311,16 @@ static void addProp(float x, float y, int type)
     props[propCount].y = y;
     props[propCount].vx = 0.0f;
     props[propCount].vy = 0.0f;
+    props[propCount].impactX = x;
+    props[propCount].impactY = y;
     props[propCount].type = type;
     props[propCount].active = true;
     props[propCount].landed = false;
 
     if (type == PROP_FIRE_ROCK) {
-        props[propCount].vx = (frand01() - 0.5f) * 0.8f;
-        props[propCount].vy = 3.5f + frand01() * 2.5f;
+        props[propCount].vx = (frand01() - 0.5f) * getFireRockDriftSpeed();
+        props[propCount].vy = getFireRockMinFallSpeed() +
+                              frand01() * getFireRockFallSpeedRange();
     }
 
     propCount++;
@@ -296,7 +384,7 @@ static void generateChunk(int chunkIndex)
         if (!ok)
             continue;
 
-        int type = (frand01() < 0.60f) ? PROP_DIAMOND : PROP_SPIKE;
+        int type = (frand01() < getSpikeChance()) ? PROP_SPIKE : PROP_DIAMOND;
         addProp(x, y, type);
         added++;
     }
@@ -305,14 +393,25 @@ static void generateChunk(int chunkIndex)
 static void spawnFireRockFromSky()
 {
     float center = g.xres * 0.5f;
-    float halfWidth = 90.0f;
+    float horizontalLimit = 140.0f;
+    float targetRadius = 35.0f;
 
-    float x = (center - halfWidth) + frand01() * (halfWidth * 2.0f);
+    float targetX = px + (frand01() - 0.5f) * (targetRadius * 2.0f);
+    if (targetX < center - horizontalLimit)
+        targetX = center - horizontalLimit;
+    if (targetX > center + horizontalLimit)
+        targetX = center + horizontalLimit;
+
+    float targetY = py + (frand01() - 0.5f) * (targetRadius * 2.0f);
+    if (targetY < 0.0f)
+        targetY = 0.0f;
 
     // spawn above visible area
     float y = g.cameraY + g.yres + 120.0f;
 
-    addProp(x, y, PROP_FIRE_ROCK);
+    addProp(targetX, y, PROP_FIRE_ROCK);
+    props[propCount - 1].impactX = targetX;
+    props[propCount - 1].impactY = targetY;
 }
 
 void propsGenerateInitial()
@@ -343,7 +442,7 @@ void propsUpdateStreaming()
 
     // spawn fire rocks
     fireRockSpawnTimer++;
-    if (fireRockSpawnTimer >= 45) {
+    if (fireRockSpawnTimer >= getFireRockSpawnInterval()) {
         fireRockSpawnTimer = 0;
         if (!g.debugMode)
             spawnFireRockFromSky();
@@ -359,15 +458,13 @@ void propsUpdateStreaming()
 
         if (!props[i].landed) {
             // In your game, smaller y is lower, so subtract vy to fall
-            props[i].vy += 0.15f;
+            props[i].vy += getFireRockGravity();
             props[i].x += props[i].vx;
             props[i].y -= props[i].vy;
 
-            // land near lower part of visible screen
-            float impactY = g.cameraY + 100.0f;
-
-            if (props[i].y <= impactY) {
-                props[i].y = impactY;
+            if (props[i].y <= props[i].impactY) {
+                props[i].x = props[i].impactX;
+                props[i].y = props[i].impactY;
                 props[i].vx = 0.0f;
                 props[i].vy = 0.0f;
                 props[i].landed = true;
@@ -398,6 +495,7 @@ void propsRender()
         }
         else if (props[i].type == PROP_FIRE_ROCK) {
             if (!props[i].landed) {
+                drawFireRockShadow(props[i].impactX, props[i].y, props[i].impactY);
                 g.fireRock.show(FIRE_ROCK_SIZE, (int)sx, (int)sy, 0.0f, 0);
             } else {
                 g.fireImpact.show(FIRE_IMPACT_SIZE, (int)sx, (int)sy, 0.0f, 0);
@@ -412,7 +510,8 @@ void propsCheckCollisionsWithPlayer()
     const float playerH = 32.0f;
 
     const float diamondSize = 24.0f;
-    const float spikeSize   = 28.0f;
+    const float spikeHitboxW = 18.0f;
+    const float spikeHitboxH = 16.0f;
 
     float pLeft = px - playerW * 0.5f;
     float pBot  = py - playerH * 0.5f;
@@ -421,43 +520,50 @@ void propsCheckCollisionsWithPlayer()
         if (!props[i].active)
             continue;
 
-        float sz = 0.0f;
+        float hitW = 0.0f;
+        float hitH = 0.0f;
 
-        if (props[i].type == PROP_DIAMOND)
-            sz = diamondSize;
-        else if (props[i].type == PROP_SPIKE)
-            sz = spikeSize;
-        else if (props[i].type == PROP_FIRE_ROCK)
-            sz = props[i].landed ? FIRE_IMPACT_SIZE : FIRE_ROCK_SIZE;
+        if (props[i].type == PROP_DIAMOND) {
+            hitW = diamondSize;
+            hitH = diamondSize;
+        }
+        else if (props[i].type == PROP_SPIKE) {
+            hitW = spikeHitboxW;
+            hitH = spikeHitboxH;
+        }
+        else if (props[i].type == PROP_FIRE_ROCK) {
+            hitW = props[i].landed ? FIRE_IMPACT_SIZE : FIRE_ROCK_SIZE;
+            hitH = hitW;
+        }
 
-        float dLeft = props[i].x - sz * 0.5f;
-        float dBot  = props[i].y - sz * 0.5f;
+        float dLeft = props[i].x - hitW * 0.5f;
+        float dBot  = props[i].y - hitH * 0.5f;
 
-        if (AABB(pLeft, pBot, playerW, playerH, dLeft, dBot, sz, sz)) {
+        if (AABB(pLeft, pBot, playerW, playerH, dLeft, dBot, hitW, hitH)) {
             if (props[i].type == PROP_DIAMOND) {
                 props[i].active = false;
                 g.score += 10;
                 triggerPlayerSparkle();
-		gemSound.play();
+                gemSound.play();
             }
             else if (props[i].type == PROP_SPIKE) {
-		    if (g.hurtTimer <= 0 && g.shieldTimer <= 0) {
+                if (g.hurtTimer <= 0 && g.shieldTimer <= 0) {
                     g.health--;
                     if (g.health < 0)
                         g.health = 0;
                     g.hurtTimer = SPIKE_HURT_COOLDOWN;
                     triggerPlayerHurt();
-		    hurtSound.play();
+                    hurtSound.play();
                 }
             }
             else if (props[i].type == PROP_FIRE_ROCK) {
                 if (g.hurtTimer <= 0) {
-                    g.health -= 1;
+                    g.health -= getFireRockDamage();
                     if (g.health < 0)
                         g.health = 0;
                     g.hurtTimer = FIRE_ROCK_HURT_COOLDOWN;
                     triggerPlayerHurt();
-		    hurtSound.play();
+                    hurtSound.play();
                 }
             }
         }

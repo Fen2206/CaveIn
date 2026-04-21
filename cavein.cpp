@@ -238,7 +238,7 @@ void renderGame();
 void renderScrollingGameBackground();
 void gamePhysics();
 void renderHealth();
-// void renderSettings();
+void renderSettings();
 
 //==========================================================================
 // M A I N
@@ -435,24 +435,36 @@ int check_keys(XEvent *e)
         {
             g.state = STATE_MENU;
         }
-         else if (g.state == STATE_END) {
-            renderEndScreen();
-}
+        else if (g.state == STATE_END) {
+            if (g.endSelection == 0) {
+                overSound.stop();
+                g.level = 1;
+                initGame();
+                g.state = STATE_GAME;
+            } else {
+                overSound.stop();
+                menuSound.play();
+                g.level = 1;
+                g.menuSelection = 0;
+                g.state = STATE_MENU;
+            }
+        }
         else if (g.state == STATE_MENU)
         {
 
-                if (g.menuSelection == 0) {
-                    g.state = STATE_GAME;
-                    initGame();
-                }
+            if (g.menuSelection == 0) {
+                g.state = STATE_GAME;
+                g.level = 1;
+                initGame();
+            }
 
             else if (g.menuSelection == 1)
             {
                 g.state = STATE_SETTINGS;
             }
-		else if (g.menuSelection == 2) {
-			g.state = STATE_HELP;
-		}
+            else if (g.menuSelection == 2) {
+                g.state = STATE_HELP;
+            }
             else if (g.menuSelection == 3)
             {
                 return 1;
@@ -461,17 +473,17 @@ int check_keys(XEvent *e)
         //if in game and level passes press enter to restart
         else if (g.state == STATE_GAME && isLevelPassed())
         {
+            g.level++;
             initGame();
         }
-
-        if (g.state == STATE_END && key == XK_Return) {
-        initGame();
-        g.state = STATE_GAME;
-}
-
+        else if (g.state == STATE_HELP || g.state == STATE_SETTINGS)
+        {
+            g.state = STATE_MENU;
+        }
 
         break;
     case XK_Up:
+    case XK_w:
         if (g.state == STATE_MENU)
         {
         	scrollSound.play();
@@ -479,14 +491,28 @@ int check_keys(XEvent *e)
             if (g.menuSelection < 0)
                 g.menuSelection = 3;
         }
+        else if (g.state == STATE_END)
+        {
+            scrollSound.play();
+            g.endSelection--;
+            if (g.endSelection < 0)
+                g.endSelection = 1;
+        }
         break;
 
     case XK_Down:
+    case XK_s:
         if (g.state == STATE_MENU) {
         	scrollSound.play();
             g.menuSelection++;
             if (g.menuSelection > 3)
                 g.menuSelection = 0;
+        }
+        else if (g.state == STATE_END) {
+            scrollSound.play();
+            g.endSelection++;
+            if (g.endSelection > 1)
+                g.endSelection = 0;
         }
         break;
     case XK_Escape:
@@ -494,8 +520,6 @@ int check_keys(XEvent *e)
     case XK_m:
         g.mouse_cursor_on = !g.mouse_cursor_on;
         x11.show_mouse_cursor(g.mouse_cursor_on);
-        break;
-    case XK_s:
         break;
     case XK_h:
         break;
@@ -557,7 +581,7 @@ void render()
 	    break;
 
     case STATE_SETTINGS:
-        // renderSettings();
+        renderSettings();
         break;
 
     case STATE_EXIT:
@@ -582,6 +606,9 @@ void renderHealth()
         case 0:
             bar = &g.health0;
             gameOver = true;
+            g.endSelection = 0;
+            gameSound.stop();
+            overSound.play();
             g.state = STATE_END;
             break;
     }
@@ -664,4 +691,15 @@ void renderMenu()
         else
             ggprint(&r, 24, 24, 0x00ffffff, options[i]);
     }
+}
+
+void renderSettings()
+{
+    Rect r;
+    r.bot = g.yres - 200;
+    r.left = g.xres / 2;
+    r.center = 1;
+
+    ggprint(&r, 32, 32, 0x00ffffff, "SETTINGS");
+    ggprint(&r, 24, 24, 0x0000ff00, "Back");
 }
