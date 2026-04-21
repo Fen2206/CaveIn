@@ -212,8 +212,8 @@ static const int   chunkTarget = 6;
 static int highestChunkGenerated = -1;
 
 static int fireRockSpawnTimer = 0;
-static const float fireRockSize   = 22.0f;
-static const float fireImpactSize = 25.0f;
+static const float FIRE_ROCK_SIZE   = 22.0f;
+static const float FIRE_IMPACT_SIZE = 25.0f;
 
 static void addProp(float x, float y, int type)
 {
@@ -395,9 +395,9 @@ void propsRender()
         }
         else if (props[i].type == PROP_FIRE_ROCK) {
             if (!props[i].landed) {
-                g.fireRock.show(fireRockSize, (int)sx, (int)sy, 0.0f, 0);
+                g.fireRock.show(FIRE_ROCK_SIZE, (int)sx, (int)sy, 0.0f, 0);
             } else {
-                g.fireImpact.show(fireRockSize, (int)sx, (int)sy, 0.0f, 0);
+                g.fireImpact.show(FIRE_ROCK_SIZE, (int)sx, (int)sy, 0.0f, 0);
             }
         }
     }
@@ -429,7 +429,7 @@ void propsCheckCollisionsWithPlayer()
         else if (props[i].type == PROP_FIRE_ROCK){
             g.show_warning = 1;
             g.warning_timer = 50;
-            sz = props[i].landed ? fireImpactSize : fireRockSize;
+            sz = props[i].landed ? FIRE_IMPACT_SIZE : FIRE_ROCK_SIZE;
         }
         float dLeft = props[i].x - sz * 0.5f;
         float dBot  = props[i].y - sz * 0.5f;
