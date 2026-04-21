@@ -436,7 +436,18 @@ int check_keys(XEvent *e)
             g.state = STATE_MENU;
         }
         else if (g.state == STATE_END) {
-            renderEndScreen();
+            if (g.endSelection == 0) {
+                overSound.stop();
+                g.level = 1;
+                initGame();
+                g.state = STATE_GAME;
+            } else {
+                overSound.stop();
+                menuSound.play();
+                g.level = 1;
+                g.menuSelection = 0;
+                g.state = STATE_MENU;
+            }
         }
         else if (g.state == STATE_MENU)
         {
@@ -466,15 +477,9 @@ int check_keys(XEvent *e)
             initGame();
         }
 
-        if (g.state == STATE_END && key == XK_Return) {
-            g.level = 1;
-            initGame();
-            g.state = STATE_GAME;
-        }
-
-
         break;
     case XK_Up:
+    case XK_w:
         if (g.state == STATE_MENU)
         {
         	scrollSound.play();
@@ -482,14 +487,28 @@ int check_keys(XEvent *e)
             if (g.menuSelection < 0)
                 g.menuSelection = 3;
         }
+        else if (g.state == STATE_END)
+        {
+            scrollSound.play();
+            g.endSelection--;
+            if (g.endSelection < 0)
+                g.endSelection = 1;
+        }
         break;
 
     case XK_Down:
+    case XK_s:
         if (g.state == STATE_MENU) {
         	scrollSound.play();
             g.menuSelection++;
             if (g.menuSelection > 3)
                 g.menuSelection = 0;
+        }
+        else if (g.state == STATE_END) {
+            scrollSound.play();
+            g.endSelection++;
+            if (g.endSelection > 1)
+                g.endSelection = 0;
         }
         break;
     case XK_Escape:
@@ -497,8 +516,6 @@ int check_keys(XEvent *e)
     case XK_m:
         g.mouse_cursor_on = !g.mouse_cursor_on;
         x11.show_mouse_cursor(g.mouse_cursor_on);
-        break;
-    case XK_s:
         break;
     case XK_h:
         break;
@@ -585,6 +602,9 @@ void renderHealth()
         case 0:
             bar = &g.health0;
             gameOver = true;
+            g.endSelection = 0;
+            gameSound.stop();
+            overSound.play();
             g.state = STATE_END;
             break;
     }

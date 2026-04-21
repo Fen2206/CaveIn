@@ -30,6 +30,7 @@ Global::Global()
     mouse_cursor_on = 1;
     state = STATE_TITLE;
     menuSelection = 0;
+    endSelection = 0;
 
 
     cameraX = 0.0f;
@@ -147,12 +148,6 @@ void renderGameDisplay()
 void renderEndScreen()
 {
     Rect r;
-    static bool soundFlag;
-    if (!soundFlag) {
-    gameSound.stop();
-	overSound.play();
-	soundFlag = 1;
-    }
 
     g.background.show(g.xres/2, g.xres/2, g.yres/2, 0.0f);
 
@@ -162,5 +157,17 @@ void renderEndScreen()
 
     ggprint(&r, 30, 18, 0x00ff4444, "You Lost!");
     ggprint(&r, 20, 18, 0x00ffffff, "Score: %d", g.score);
-    ggprint(&r, 18, 18, 0x00ffffff, "Press ENTER to continue");
+
+    const int NOPTIONS = 2;
+    const char *options[NOPTIONS] = {
+        "Retry",
+        "Main Menu"
+    };
+
+    for (int i = 0; i < NOPTIONS; i++) {
+        if (i == g.endSelection)
+            ggprint(&r, 20, 18, 0x0000ff00, options[i]);
+        else
+            ggprint(&r, 20, 18, 0x00ffffff, options[i]);
+    }
 }

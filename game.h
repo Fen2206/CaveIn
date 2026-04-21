@@ -52,6 +52,7 @@ public:
 
     float scale;
     int menuSelection;
+    int endSelection;
     GameState state;
     int debugMode;
 
