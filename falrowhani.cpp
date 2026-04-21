@@ -217,6 +217,10 @@ static int highestChunkGenerated = -1;
 static int fireRockSpawnTimer = 0;
 static const float FIRE_ROCK_SIZE   = 22.0f;
 static const float FIRE_IMPACT_SIZE = 25.0f;
+static const float FIRE_ROCK_DRIFT_SPEED = 0.45f;
+static const float FIRE_ROCK_MIN_FALL_SPEED = 1.8f;
+static const float FIRE_ROCK_FALL_SPEED_RANGE = 1.2f;
+static const float FIRE_ROCK_GRAVITY = 0.07f;
 
 static void addProp(float x, float y, int type)
 {
@@ -231,8 +235,9 @@ static void addProp(float x, float y, int type)
     props[propCount].landed = false;
 
     if (type == PROP_FIRE_ROCK) {
-        props[propCount].vx = (frand01() - 0.5f) * 0.8f;
-        props[propCount].vy = 3.5f + frand01() * 2.5f;
+        props[propCount].vx = (frand01() - 0.5f) * FIRE_ROCK_DRIFT_SPEED;
+        props[propCount].vy = FIRE_ROCK_MIN_FALL_SPEED +
+                              frand01() * FIRE_ROCK_FALL_SPEED_RANGE;
     }
 
     propCount++;
@@ -359,7 +364,7 @@ void propsUpdateStreaming()
 
         if (!props[i].landed) {
             // In your game, smaller y is lower, so subtract vy to fall
-            props[i].vy += 0.15f;
+            props[i].vy += FIRE_ROCK_GRAVITY;
             props[i].x += props[i].vx;
             props[i].y -= props[i].vy;
 
