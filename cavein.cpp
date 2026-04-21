@@ -288,14 +288,14 @@ int main()
         }
         render();
         x11.swapBuffers();
-
+/*
         g.frameCount++; 
 		time_t curr =time(NULL);
 		if (curr != g.final) { 
 			g.fps =g.frameCount; 
 			g.frameCount =0; 
-			g.final = curr;
-		}
+			g.final = curr;*/
+		//}
     }
     cleanup_fonts();
     // logClose();
@@ -562,6 +562,8 @@ void render()
         break;
     }
 }
+
+
 void renderHealth()
 {
     extern bool gameOver;
@@ -592,15 +594,35 @@ void renderHealth()
     r.bot = g.yres - 78;
     r.center = 0;
 
-    //char str[64];
-    //sprintf(str, "Score: %d", g.score);
-
-    //char fpsStr[64];
-    //sprintf(fpsStr, "FPS: %d", g.fps);
-    //ggprint(&r, 16, 0x00ffffff, 0xFFFFFFFF, "Fps: %d", g.fps);;
-    //x11.draw_text(10, g.yres - 20, fpsStr);
-
     ggprint(&r, 16, 0x00ffffff, 0xFFFFFFFF, "Score: %d", g.score);
+
+     if (g.show_warning) {
+        glPushMatrix();
+        glLoadIdentity();
+        glColor3f(0.0f, 0.0f, 0.0f); // Black color
+        glBegin(GL_QUADS);
+            glVertex2f(g.xres/2 - 100, g.yres/2 + 20);
+            glVertex2f(g.xres/2 + 100, g.yres/2 + 20);
+            glVertex2f(g.xres/2 + 100, g.yres/2 - 20);
+            glVertex2f(g.xres/2 - 100, g.yres/2 - 20);
+        glEnd();
+        glPopMatrix();
+
+        r.left = g.xres/2 - 50;
+        r.bot = g.yres/2;
+        r.center = 0;
+
+         ggprint(&r, 16, 0x00ffffff, 0xFFFFFFFF, "Meteorite Coming!");
+
+        //gprint16(&r, 1000, , "Meteorite Coming!");
+    }
+
+    if (g.warning_timer > 0) {
+        g.warning_timer--;
+        if (g.warning_timer == 0) {
+            g.show_warning = 0;
+        }
+    }
 }
 
 
@@ -630,9 +652,6 @@ void renderTitle()
     r.bot = g.yres/2 - 10;
     r.left = g.xres/2;
     r.center = 1;
-
-   // ggprint(&r, 16, 16, 0xff00ffff,
-    //        "By: Fenoon Alrowhani, Henry Arinaga, Joshua Garibay");
 
     Rect r2;
     r2.bot = 250;

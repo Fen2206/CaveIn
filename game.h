@@ -46,6 +46,9 @@ public:
     int maxHealth;
     int score;
     int hurtTimer;
+    int show_warning;
+    int warning_timer;
+
 
     float scale;
     int menuSelection;

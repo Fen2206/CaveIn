@@ -44,6 +44,9 @@ Global::Global()
     health = 8;
     score = 0;
     hurtTimer = 0;
+    show_warning = 0;
+    warning_timer = 0;
+
 }
 
 int score = 0;

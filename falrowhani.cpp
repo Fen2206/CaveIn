@@ -420,13 +420,17 @@ void propsCheckCollisionsWithPlayer()
 
         float sz = 0.0f;
 
-        if (props[i].type == PROP_DIAMOND)
+        if (props[i].type == PROP_DIAMOND){
             sz = diamondSize;
-        else if (props[i].type == PROP_SPIKE)
+        }
+        else if (props[i].type == PROP_SPIKE){
             sz = spikeSize;
-        else if (props[i].type == PROP_FIRE_ROCK)
+        }
+        else if (props[i].type == PROP_FIRE_ROCK){
+            g.show_warning = 1;
+            g.warning_timer = 50;
             sz = props[i].landed ? fireImpactSize : fireRockSize;
-
+        }
         float dLeft = props[i].x - sz * 0.5f;
         float dBot  = props[i].y - sz * 0.5f;
 
@@ -464,6 +468,7 @@ void propsCheckCollisionsWithPlayer()
 void gamePhysics()
 {
     if (isLevelPassed()) {
+        
         return;
     }
 
