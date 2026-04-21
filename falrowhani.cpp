@@ -205,15 +205,15 @@ enum {
 static Prop props[MAX_PROPS];
 static int propCount = 0;
 
-static const float CHUNK_SIZE = 256.0f;
-static const float MIN_DIST = 70.0f;
-static const int   TARGET_PER_CHUNK = 6;
+static const float chunkSize = 256.0f;
+static const float distMin = 70.0f;
+static const int   chunkTarget = 6;
 
 static int highestChunkGenerated = -1;
 
 static int fireRockSpawnTimer = 0;
-static const float FIRE_ROCK_SIZE   = 22.0f;
-static const float FIRE_IMPACT_SIZE = 25.0f;
+static const float fireRockSize   = 22.0f;
+static const float fireImpactSize = 25.0f;
 
 static void addProp(float x, float y, int type)
 {
@@ -262,15 +262,15 @@ static void generateChunk(int chunkIndex)
     const float halfWidth = 70.0f;
     const float topPad = 20.0f;
     const float bottomPad = 20.0f;
-    const float min2 = MIN_DIST * MIN_DIST;
+    const float min2 = distMin * distMin;
 
-    float yStart = chunkIndex * CHUNK_SIZE + topPad;
-    float yEnd   = (chunkIndex + 1) * CHUNK_SIZE - bottomPad;
+    float yStart = chunkIndex * chunkSize + topPad;
+    float yEnd   = (chunkIndex + 1) * chunkSize - bottomPad;
 
     int added = 0;
-    int attempts = TARGET_PER_CHUNK * 40;
+    int attempts = chunkTarget * 40;
 
-    for (int k = 0; k < attempts && added < TARGET_PER_CHUNK; k++) {
+    for (int k = 0; k < attempts && added < chunkTarget; k++) {
         float x = (center - halfWidth) + frand01() * (halfWidth * 2.0f);
         float y = yStart + frand01() * (yEnd - yStart);
 
@@ -293,6 +293,7 @@ static void generateChunk(int chunkIndex)
         if (!ok)
             continue;
 
+            //60 percent diamnds 40 spikes 
         int type = (frand01() < 0.60f) ? PROP_DIAMOND : PROP_SPIKE;
         addProp(x, y, type);
         added++;
@@ -318,7 +319,7 @@ void propsGenerateInitial()
     highestChunkGenerated = -1;
     fireRockSpawnTimer = 0;
 
-    int initialTopChunk = (int)((g.yres * 2.0f) / CHUNK_SIZE);
+    int initialTopChunk = (int)((g.yres * 2.0f) / chunkSize);
 
     for (int chunk = 0; chunk <= initialTopChunk; chunk++) {
         generateChunk(chunk);
@@ -331,7 +332,7 @@ void propsUpdateStreaming()
     removeOldProps();
 
     float wantedTopY = g.cameraY + (g.yres * 2.0f);
-    int wantedChunk = (int)(wantedTopY / CHUNK_SIZE);
+    int wantedChunk = (int)(wantedTopY / chunkSize);
 
     while (highestChunkGenerated < wantedChunk) {
         highestChunkGenerated++;
@@ -394,9 +395,9 @@ void propsRender()
         }
         else if (props[i].type == PROP_FIRE_ROCK) {
             if (!props[i].landed) {
-                g.fireRock.show(FIRE_ROCK_SIZE, (int)sx, (int)sy, 0.0f, 0);
+                g.fireRock.show(fireRockSize, (int)sx, (int)sy, 0.0f, 0);
             } else {
-                g.fireImpact.show(FIRE_IMPACT_SIZE, (int)sx, (int)sy, 0.0f, 0);
+                g.fireImpact.show(fireRockSize, (int)sx, (int)sy, 0.0f, 0);
             }
         }
     }
@@ -424,7 +425,7 @@ void propsCheckCollisionsWithPlayer()
         else if (props[i].type == PROP_SPIKE)
             sz = spikeSize;
         else if (props[i].type == PROP_FIRE_ROCK)
-            sz = props[i].landed ? FIRE_IMPACT_SIZE : FIRE_ROCK_SIZE;
+            sz = props[i].landed ? fireImpactSize : fireRockSize;
 
         float dLeft = props[i].x - sz * 0.5f;
         float dBot  = props[i].y - sz * 0.5f;

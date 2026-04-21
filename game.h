@@ -19,6 +19,9 @@ public:
     int mouse_cursor_on;
     float cameraX;
     float cameraY;
+    int fps;
+    int frameCount;
+    time_t final; 
 
     Image background;
     Image game;

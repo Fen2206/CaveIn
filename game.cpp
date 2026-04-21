@@ -30,6 +30,9 @@ Global::Global()
     mouse_cursor_on = 1;
     state = STATE_TITLE;
     menuSelection = 0;
+    fps=0;
+    frameCount=0;
+    final=0;
 
 
     cameraX = 0.0f;

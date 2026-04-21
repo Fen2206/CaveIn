@@ -16,6 +16,9 @@
 #include <ctime>
 #include <cmath>
 #include <X11/Xlib.h>
+#include <GL/gl.h> 		
+#include <GL/glu.h>
+
 // #include <X11/Xutil.h>
 // #include <GL/gl.h>
 // #include <GL/glu.h>
@@ -28,6 +31,7 @@
 #include "jgaribay.h"
 #include "game.h"
 #include "input.h"
+
 // defined types
 typedef float Flt;
 typedef float Vec[3];
@@ -162,6 +166,15 @@ public:
             reshape_window(xce.width, xce.height);
         }
     }
+    void draw_text(int x, int y, const char *str)
+{
+    int yx11 = g.yres - y;
+
+    GC gc = XCreateGC(dpy, win, 0, NULL);
+    XSetForeground(dpy, gc, 0x00ffffff);
+    XDrawString(dpy, win, gc, x, yx11, str, (int)strlen(str));
+    XFreeGC(dpy, gc);
+}
     void reshape_window(int width, int height)
     {
         // window has been resized.
@@ -197,6 +210,7 @@ public:
     {
         XWarpPointer(dpy, None, win, 0, 0, 0, 0, x, y);
     }
+
     void show_mouse_cursor(const int onoff)
     {
         // printf("show_mouse_cursor(%i)\n", onoff); fflush(stdout);
@@ -274,6 +288,14 @@ int main()
         }
         render();
         x11.swapBuffers();
+
+        g.frameCount++; 
+		time_t curr =time(NULL);
+		if (curr != g.final) { 
+			g.fps =g.frameCount; 
+			g.frameCount =0; 
+			g.final = curr;
+		}
     }
     cleanup_fonts();
     // logClose();
@@ -563,7 +585,7 @@ void renderHealth()
 
     bar->show(120.0f, 110, g.yres - 35, 0.0f, 0);
 
-    //g.diamond.show(18.0f, 30, g.yres - 70, 0.0f, 0);
+    g.diamond.show(18.0f, 30, g.yres - 70, 0.0f, 0);
 
     Rect r;
     r.left = 55;
@@ -572,6 +594,12 @@ void renderHealth()
 
     //char str[64];
     //sprintf(str, "Score: %d", g.score);
+
+    //char fpsStr[64];
+    //sprintf(fpsStr, "FPS: %d", g.fps);
+    //ggprint(&r, 16, 0x00ffffff, 0xFFFFFFFF, "Fps: %d", g.fps);;
+    //x11.draw_text(10, g.yres - 20, fpsStr);
+
     ggprint(&r, 16, 0x00ffffff, 0xFFFFFFFF, "Score: %d", g.score);
 }
 
@@ -593,11 +621,12 @@ void renderScrollingGameBackground()
 }
 void renderTitle()
 {
-    Rect r;
+   
 
     g.background.show(g.xres/2, g.xres/2, g.yres/2, 0.0f);
     titleAnimationRender();
 
+    Rect r;
     r.bot = g.yres/2 - 10;
     r.left = g.xres/2;
     r.center = 1;
@@ -606,7 +635,7 @@ void renderTitle()
     //        "By: Fenoon Alrowhani, Henry Arinaga, Joshua Garibay");
 
     Rect r2;
-    r2.bot = 180;
+    r2.bot = 250;
     r2.left = g.xres/2;
     r2.center = 1;
 
