@@ -193,6 +193,7 @@ void titleAnimationRender()
 struct Prop {
     float x, y;
     float vx, vy;
+    float impactX, impactY;
     int type;
     bool active;
     bool landed;
@@ -310,6 +311,8 @@ static void addProp(float x, float y, int type)
     props[propCount].y = y;
     props[propCount].vx = 0.0f;
     props[propCount].vy = 0.0f;
+    props[propCount].impactX = x;
+    props[propCount].impactY = y;
     props[propCount].type = type;
     props[propCount].active = true;
     props[propCount].landed = false;
@@ -390,14 +393,25 @@ static void generateChunk(int chunkIndex)
 static void spawnFireRockFromSky()
 {
     float center = g.xres * 0.5f;
-    float halfWidth = 90.0f;
+    float horizontalLimit = 140.0f;
+    float targetRadius = 35.0f;
 
-    float x = (center - halfWidth) + frand01() * (halfWidth * 2.0f);
+    float targetX = px + (frand01() - 0.5f) * (targetRadius * 2.0f);
+    if (targetX < center - horizontalLimit)
+        targetX = center - horizontalLimit;
+    if (targetX > center + horizontalLimit)
+        targetX = center + horizontalLimit;
+
+    float targetY = py + (frand01() - 0.5f) * (targetRadius * 2.0f);
+    if (targetY < 0.0f)
+        targetY = 0.0f;
 
     // spawn above visible area
     float y = g.cameraY + g.yres + 120.0f;
 
-    addProp(x, y, PROP_FIRE_ROCK);
+    addProp(targetX, y, PROP_FIRE_ROCK);
+    props[propCount - 1].impactX = targetX;
+    props[propCount - 1].impactY = targetY;
 }
 
 void propsGenerateInitial()
@@ -448,11 +462,9 @@ void propsUpdateStreaming()
             props[i].x += props[i].vx;
             props[i].y -= props[i].vy;
 
-            // land near lower part of visible screen
-            float impactY = g.cameraY + 100.0f;
-
-            if (props[i].y <= impactY) {
-                props[i].y = impactY;
+            if (props[i].y <= props[i].impactY) {
+                props[i].x = props[i].impactX;
+                props[i].y = props[i].impactY;
                 props[i].vx = 0.0f;
                 props[i].vy = 0.0f;
                 props[i].landed = true;
@@ -483,8 +495,7 @@ void propsRender()
         }
         else if (props[i].type == PROP_FIRE_ROCK) {
             if (!props[i].landed) {
-                float impactY = g.cameraY + 100.0f;
-                drawFireRockShadow(props[i].x, props[i].y, impactY);
+                drawFireRockShadow(props[i].impactX, props[i].y, props[i].impactY);
                 g.fireRock.show(FIRE_ROCK_SIZE, (int)sx, (int)sy, 0.0f, 0);
             } else {
                 g.fireImpact.show(FIRE_IMPACT_SIZE, (int)sx, (int)sy, 0.0f, 0);
