@@ -30,7 +30,7 @@ static int hurtFrameCounter = 0;
 static const int hurtFrameCount = 6;
 static const int hurtFrameDelay = 2;
 static int hurtCooldown = 0;
-static const int hurtCooldownDuration = 12;
+static const int hurtCooldownDuration = 60;
 
 static Image southFrames[4] = {
     Image("./assets/character_sprites/male_character/south/south_00.png"),
@@ -244,43 +244,40 @@ void updatePlayer()
     float dx = 0.0f;
     float dy = 0.0f;
     bool moving = false;
-    // input handling, if not hurt, allow movement input, if hurt, ignore input and play hurt animation
-    if (!hurtActive) {
-        if (g_keys[XK_a] || g_keys[XK_Left]) {
-            dx -= 1.0f;
-        }
+    if (g_keys[XK_a] || g_keys[XK_Left]) {
+        dx -= 1.0f;
+    }
 
-        if (g_keys[XK_d] || g_keys[XK_Right]) {
-            dx += 1.0f;
-        }
+    if (g_keys[XK_d] || g_keys[XK_Right]) {
+        dx += 1.0f;
+    }
 
-        if (g_keys[XK_w] || g_keys[XK_Up]) {
-            dy += 1.0f;
-        }
+    if (g_keys[XK_w] || g_keys[XK_Up]) {
+        dy += 1.0f;
+    }
 
-        if (g_keys[XK_s] || g_keys[XK_Down]) {
-            dy -= 1.0f;
-        }
+    if (g_keys[XK_s] || g_keys[XK_Down]) {
+        dy -= 1.0f;
+    }
 
-        if (dx != 0.0f || dy != 0.0f) {
-            moving = true;
+    if (dx != 0.0f || dy != 0.0f) {
+        moving = true;
 
-            float len = sqrt(dx*dx + dy*dy);
-            dx /= len;
-            dy /= len;
+        float len = sqrt(dx*dx + dy*dy);
+        dx /= len;
+        dy /= len;
 
-            px += dx * speed;
-            py += dy * speed;
+        px += dx * speed;
+        py += dy * speed;
 
-            if (dx > 0 && dy > 0) dir = DIR_NE;
-            else if (dx < 0 && dy > 0) dir = DIR_NW;
-            else if (dx > 0 && dy < 0) dir = DIR_SE;
-            else if (dx < 0 && dy < 0) dir = DIR_SW;
-            else if (dx > 0) dir = DIR_E;
-            else if (dx < 0) dir = DIR_W;
-            else if (dy > 0) dir = DIR_N;
-            else if (dy < 0) dir = DIR_S;
-        }
+        if (dx > 0 && dy > 0) dir = DIR_NE;
+        else if (dx < 0 && dy > 0) dir = DIR_NW;
+        else if (dx > 0 && dy < 0) dir = DIR_SE;
+        else if (dx < 0 && dy < 0) dir = DIR_SW;
+        else if (dx > 0) dir = DIR_E;
+        else if (dx < 0) dir = DIR_W;
+        else if (dy > 0) dir = DIR_N;
+        else if (dy < 0) dir = DIR_S;
     }
 
     // animation
@@ -346,11 +343,15 @@ void drawPlayer()
 
     float sx = px - g.cameraX;
     float sy = py - g.cameraY;
+    bool showPlayer = !(g.hurtTimer > 0 && !hurtActive &&
+                        ((g.hurtTimer / 5) % 2 == 0));
 
-    if (hurtActive) {
-        hurtFrames[hurtFrame].show(25.0f, (int)sx, (int)sy, 0.0f);
-    } else {
-        frames[currentFrame].show(25.0f, (int)sx, (int)sy, 0.0f);
+    if (showPlayer) {
+        if (hurtActive) {
+            hurtFrames[hurtFrame].show(25.0f, (int)sx, (int)sy, 0.0f);
+        } else {
+            frames[currentFrame].show(25.0f, (int)sx, (int)sy, 0.0f);
+        }
     }
 
     if (sparkleTimer > 0.0f) {

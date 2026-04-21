@@ -15,8 +15,8 @@ extern Global g;
 extern float px;
 extern float py;
 
-static const int SPIKE_HURT_COOLDOWN = 12;
-static const int FIRE_ROCK_HURT_COOLDOWN = 30;
+static const int SPIKE_HURT_COOLDOWN = 60;
+static const int FIRE_ROCK_HURT_COOLDOWN = 45;
 
 void initPowerups() {}
 void updatePowerups() {}
@@ -412,7 +412,8 @@ void propsCheckCollisionsWithPlayer()
     const float playerH = 32.0f;
 
     const float diamondSize = 24.0f;
-    const float spikeSize   = 28.0f;
+    const float spikeHitboxW = 18.0f;
+    const float spikeHitboxH = 16.0f;
 
     float pLeft = px - playerW * 0.5f;
     float pBot  = py - playerH * 0.5f;
@@ -421,33 +422,40 @@ void propsCheckCollisionsWithPlayer()
         if (!props[i].active)
             continue;
 
-        float sz = 0.0f;
+        float hitW = 0.0f;
+        float hitH = 0.0f;
 
-        if (props[i].type == PROP_DIAMOND)
-            sz = diamondSize;
-        else if (props[i].type == PROP_SPIKE)
-            sz = spikeSize;
-        else if (props[i].type == PROP_FIRE_ROCK)
-            sz = props[i].landed ? FIRE_IMPACT_SIZE : FIRE_ROCK_SIZE;
+        if (props[i].type == PROP_DIAMOND) {
+            hitW = diamondSize;
+            hitH = diamondSize;
+        }
+        else if (props[i].type == PROP_SPIKE) {
+            hitW = spikeHitboxW;
+            hitH = spikeHitboxH;
+        }
+        else if (props[i].type == PROP_FIRE_ROCK) {
+            hitW = props[i].landed ? FIRE_IMPACT_SIZE : FIRE_ROCK_SIZE;
+            hitH = hitW;
+        }
 
-        float dLeft = props[i].x - sz * 0.5f;
-        float dBot  = props[i].y - sz * 0.5f;
+        float dLeft = props[i].x - hitW * 0.5f;
+        float dBot  = props[i].y - hitH * 0.5f;
 
-        if (AABB(pLeft, pBot, playerW, playerH, dLeft, dBot, sz, sz)) {
+        if (AABB(pLeft, pBot, playerW, playerH, dLeft, dBot, hitW, hitH)) {
             if (props[i].type == PROP_DIAMOND) {
                 props[i].active = false;
                 g.score += 10;
                 triggerPlayerSparkle();
-		gemSound.play();
+                gemSound.play();
             }
             else if (props[i].type == PROP_SPIKE) {
-		    if (g.hurtTimer <= 0 && g.shieldTimer <= 0) {
+                if (g.hurtTimer <= 0 && g.shieldTimer <= 0) {
                     g.health--;
                     if (g.health < 0)
                         g.health = 0;
                     g.hurtTimer = SPIKE_HURT_COOLDOWN;
                     triggerPlayerHurt();
-		    hurtSound.play();
+                    hurtSound.play();
                 }
             }
             else if (props[i].type == PROP_FIRE_ROCK) {
@@ -457,7 +465,7 @@ void propsCheckCollisionsWithPlayer()
                         g.health = 0;
                     g.hurtTimer = FIRE_ROCK_HURT_COOLDOWN;
                     triggerPlayerHurt();
-		    hurtSound.play();
+                    hurtSound.play();
                 }
             }
         }
