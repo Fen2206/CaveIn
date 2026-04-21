@@ -7,8 +7,10 @@ enum GameState {
     STATE_TITLE,
     STATE_MENU,
     STATE_GAME,
+    STATE_HELP,
     STATE_SETTINGS,
-    STATE_EXIT
+    STATE_EXIT,
+    STATE_END
 };
 
 class Global {
@@ -18,11 +20,17 @@ public:
     int mouse_cursor_on;
     float cameraX;
     float cameraY;
+    int fps;
+    int nframes;
+    bool showfps;
 
     Image background;
     Image game;
     Image diamond;
     Image spike;
+    Image health8;
+    Image health7; 
+    Image health6;
 
     Image health5;
     Image health4;
@@ -30,6 +38,7 @@ public:
     Image health2;
     Image health1;
     Image health0;
+  
 
     Image fireRock; 
     Image fireImpact; 
@@ -38,10 +47,12 @@ public:
     int maxHealth;
     int score;
     int hurtTimer;
+    int shieldTimer;
 
     float scale;
     int menuSelection;
     GameState state;
+    int debugMode;
 
 
     Global();
@@ -56,5 +67,6 @@ void renderGame();
 bool isLevelPassed();
 int getLevelTimeRemaining();
 void renderGameDisplay();
+void renderEndScreen();
 
 #endif

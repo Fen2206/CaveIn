@@ -147,7 +147,7 @@ public:
     {
         // Set the window title bar.
         XMapWindow(dpy, win);
-        XStoreName(dpy, win, "Asteroids template");
+        XStoreName(dpy, win, "Cave In!");
     }
     void check_resize(XEvent *e)
     {
@@ -248,12 +248,14 @@ int main()
     // logOpen();
     srand(time(NULL));
     init_opengl();
+    init_misc();
     clock_gettime(CLOCK_REALTIME, &timePause);
     clock_gettime(CLOCK_REALTIME, &timeStart);
     x11.set_mouse_position(g.xres/2, g.yres/2);
     x11.show_mouse_cursor(g.mouse_cursor_on);
-    playSound(MENU_MUSIC);
+    menuSound.play();
     int done = 0;
+    int seconds = time(NULL);
     while (!done)
     {
         while (x11.getXPending())
@@ -273,7 +275,16 @@ int main()
             physicsCountdown -= physicsRate;
         }
         render();
+	++g.nframes;
+	int tmp = time(NULL);
+	if (seconds != tmp) {
+		g.fps = g.nframes;
+		g.nframes = 0;
+		seconds = tmp;
+	}
+	test();
         x11.swapBuffers();
+	usleep(200); 		// pause to let X11 work better
     }
     cleanup_fonts();
     // logClose();
@@ -320,6 +331,9 @@ glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     g.scale = resolution_scale(&g.background);
     titleAnimationInit(g.xres, g.yres);
     propsGenerateInitial();
+    g.health8.init_gl();
+    g.health7.init_gl();
+    g.health6.init_gl();
     g.health5.init_gl();
     g.health4.init_gl();
     g.health3.init_gl();
@@ -416,11 +430,14 @@ int check_keys(XEvent *e)
     switch (key)
     {
     case XK_Return:
-        playSound(UI_CLICK);
+        clickSound.play();
         if (g.state == STATE_TITLE)
         {
             g.state = STATE_MENU;
         }
+         else if (g.state == STATE_END) {
+            renderEndScreen();
+}
         else if (g.state == STATE_MENU)
         {
 
@@ -433,7 +450,10 @@ int check_keys(XEvent *e)
             {
                 g.state = STATE_SETTINGS;
             }
-            else if (g.menuSelection == 2)
+		else if (g.menuSelection == 2) {
+			g.state = STATE_HELP;
+		}
+            else if (g.menuSelection == 3)
             {
                 return 1;
             }
@@ -444,22 +464,28 @@ int check_keys(XEvent *e)
             initGame();
         }
 
+        if (g.state == STATE_END && key == XK_Return) {
+        initGame();
+        g.state = STATE_GAME;
+}
+
+
         break;
     case XK_Up:
-        playSound(UI_SWITCH);
         if (g.state == STATE_MENU)
         {
+        	scrollSound.play();
             g.menuSelection--;
             if (g.menuSelection < 0)
-                g.menuSelection = 2;
+                g.menuSelection = 3;
         }
         break;
 
     case XK_Down:
-        playSound(UI_SWITCH);
         if (g.state == STATE_MENU) {
+        	scrollSound.play();
             g.menuSelection++;
-            if (g.menuSelection > 2)
+            if (g.menuSelection > 3)
                 g.menuSelection = 0;
         }
         break;
@@ -477,6 +503,13 @@ int check_keys(XEvent *e)
         break;
     case XK_minus:
         break;
+	case XK_f:
+		g.showfps = !g.showfps;
+		break;
+	case XK_i:
+		g.debugMode = !g.debugMode;
+		printf("debug mode: %i", g.debugMode);
+		break;
     }
     return 0;
 }
@@ -506,6 +539,9 @@ void render()
     case STATE_MENU:
         renderMenu();
         break;
+    case STATE_END:
+        renderEndScreen();
+        break;
 
         case STATE_GAME:
             renderScrollingGameBackground();
@@ -515,6 +551,10 @@ void render()
             renderHealth();
             renderGameDisplay();
             break; 
+
+	case STATE_HELP:
+	    renderHelp();
+	    break;
 
     case STATE_SETTINGS:
         // renderSettings();
@@ -527,15 +567,23 @@ void render()
 }
 void renderHealth()
 {
+    extern bool gameOver;
     Image *bar = &g.health0;
 
     switch (g.health) {
+        case 8: bar = &g.health8; break;
+        case 7: bar = &g.health7; break;
+        case 6: bar = &g.health6; break;
         case 5: bar = &g.health5; break;
         case 4: bar = &g.health4; break;
         case 3: bar = &g.health3; break;
         case 2: bar = &g.health2; break;
         case 1: bar = &g.health1; break;
-        case 0: bar = &g.health0; break;
+        case 0:
+            bar = &g.health0;
+            gameOver = true;
+            g.state = STATE_END;
+            break;
     }
 
     bar->show(120.0f, 110, g.yres - 35, 0.0f, 0);
@@ -543,13 +591,15 @@ void renderHealth()
     //g.diamond.show(18.0f, 30, g.yres - 70, 0.0f, 0);
 
     Rect r;
-    r.left = 55;
+    r.left = 20;
     r.bot = g.yres - 78;
     r.center = 0;
 
     //char str[64];
     //sprintf(str, "Score: %d", g.score);
-    ggprint(&r, 16, 0x00ffffff, 0xFFFFFFFF, "Score: %d", g.score);
+    ggprint(&r, 16, 22, 0xFFFFFFFF, "Score: %d", g.score);
+    if (g.showfps)
+    	ggprint(&r, 16, 22, 0x00ffffff, "<f> fps: %i", g.fps);
 }
 
 
@@ -568,7 +618,6 @@ void renderScrollingGameBackground()
         g.game.show(g.xres / 2, (int)centerX, (int)drawY, 0.0f);
     }
 }
-
 void renderTitle()
 {
     Rect r;
@@ -576,16 +625,15 @@ void renderTitle()
     g.background.show(g.xres/2, g.xres/2, g.yres/2, 0.0f);
     titleAnimationRender();
 
-    r.bot = g.yres/2 + 40;
+    r.bot = g.yres/2 - 10;
     r.left = g.xres/2;
     r.center = 1;
 
-    ggprint(&r, 32, 32, 0xff0a0f2a, "Cave In!");
-    ggprint(&r, 16, 16, 0xff00ffff,
-            "By: Fenoon Alrowhani, Henry Arinaga, Joshua Garibay");
+   // ggprint(&r, 16, 16, 0xff00ffff,
+    //        "By: Fenoon Alrowhani, Henry Arinaga, Joshua Garibay");
 
     Rect r2;
-    r2.bot = 180; 
+    r2.bot = 180;
     r2.left = g.xres/2;
     r2.center = 1;
 
@@ -601,12 +649,15 @@ void renderMenu()
 
     ggprint(&r, 32, 32, 0x00ffffff, "MAIN MENU");
 
-    const char *options[3] = {
+    const int NOPTIONS = 4;
+    const char *options[NOPTIONS] = {
         "Start Game",
         "Settings",
-        "Exit"};
+	"How to play",
+        "Exit"
+    };
 
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < NOPTIONS; i++)
     {
         if (i == g.menuSelection)
             ggprint(&r, 24, 24, 0x0000ff00, options[i]);

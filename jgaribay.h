@@ -1,25 +1,76 @@
 #ifndef JGARIBAY_H
 #define JGARIBAY_H
+#include <AL/alut.h>
+#include "image.h"
 
-void initObstacles();
-void updateObstacles();
-void drawObstacles();
-
-void playSound(int);
-
-extern const char *sound_files[];
-extern int sound_loop[];
-extern float sound_gain[];
-
-enum Sound {
-    UI_CLICK = 0,
-    MENU_MUSIC,
-    UI_SWITCH,
-    GEM_SPARKLE,
-    PLAYER_HURT
+enum SoundType {
+	SOUND_CLICK = 0,
+	SOUND_MENU,
+	SOUND_SCROLL,
+	SOUND_GEM,
+	SOUND_HURT
 };
 
-const int NSOUNDS = 5;
+enum PowerupType {
+	POWER_SPEED,
+	POWER_SHIELD,
+	POWER_HEART
+};
+
+class Sound {
+	private:
+		ALuint source;
+		ALuint buffer;
+		float gain;
+		float pitch;
+		bool loop;
+	public:
+		Sound(const char *file, float gain, float pitch, bool loop);
+		void play();
+		void stop();
+		~Sound();
+
+};
+
+class Openal {
+	public:
+		Openal();
+		~Openal();
+};
+
+class Powerup {
+	private:
+		float x, y;
+		float w, h;
+		bool active;
+
+		PowerupType type;
+		Image *image;
+		Sound *sound;
+	public:
+		Powerup(PowerupType type, const char *, Sound *sound, float x, float y, float w, float h);
+		Powerup(PowerupType type, Image *image, Sound *sound, float x, float y, float w, float h);
+		void draw();
+		bool collides(float px, float py, float pw, float ph);
+		void activate();
+		void update(float px, float py, float pw, float ph);
+		bool isActive();
+};
+
+// global variable declarations
+extern Sound  clickSound;
+extern Sound   menuSound;
+extern Sound   gameSound;
+extern Sound scrollSound;
+extern Sound    gemSound;
+extern Sound   hurtSound;
+extern Sound   overSound;
+
+// function prototypes
+void test();
+void renderHelp();
+void init_misc();
+void drawStatusEffects();
 
 #endif
 
