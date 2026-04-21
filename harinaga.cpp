@@ -27,9 +27,9 @@ static bool hurtActive = false;
 static int hurtFrame = 0;
 static int hurtFrameCounter = 0;
 static const int hurtFrameCount = 6;
-static const int hurtFrameDelay = 5;
+static const int hurtFrameDelay = 2;
 static int hurtCooldown = 0;
-static const int hurtCooldownDuration = 30;
+static const int hurtCooldownDuration = 12;
 
 static Image southFrames[4] = {
     Image("./assets/character_sprites/male_character/south/south_00.png"),

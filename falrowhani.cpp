@@ -15,6 +15,9 @@ extern Global g;
 extern float px;
 extern float py;
 
+static const int SPIKE_HURT_COOLDOWN = 12;
+static const int FIRE_ROCK_HURT_COOLDOWN = 30;
+
 void initPowerups() {}
 void updatePowerups() {}
 void drawPowerups() {}
@@ -391,7 +394,7 @@ void propsCheckCollisionsWithPlayer()
                     g.health--;
                     if (g.health < 0)
                         g.health = 0;
-                    g.hurtTimer = 30;
+                    g.hurtTimer = SPIKE_HURT_COOLDOWN;
                     triggerPlayerHurt();
                     playSound(PLAYER_HURT);
                 }
@@ -401,7 +404,7 @@ void propsCheckCollisionsWithPlayer()
                     g.health -= 2;
                     if (g.health < 0)
                         g.health = 0;
-                    g.hurtTimer = 30;
+                    g.hurtTimer = FIRE_ROCK_HURT_COOLDOWN;
                     triggerPlayerHurt();
                     playSound(PLAYER_HURT);
                 }
