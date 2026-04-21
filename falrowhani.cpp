@@ -221,6 +221,42 @@ static const float FIRE_ROCK_DRIFT_SPEED = 0.45f;
 static const float FIRE_ROCK_MIN_FALL_SPEED = 1.8f;
 static const float FIRE_ROCK_FALL_SPEED_RANGE = 1.2f;
 static const float FIRE_ROCK_GRAVITY = 0.07f;
+static const float FIRE_ROCK_WARNING_DISTANCE = 220.0f;
+
+static void drawFireRockShadow(float x, float y, float impactY)
+{
+    float distance = y - impactY;
+    if (distance < 0.0f)
+        distance = 0.0f;
+    if (distance > FIRE_ROCK_WARNING_DISTANCE)
+        distance = FIRE_ROCK_WARNING_DISTANCE;
+
+    float warningProgress = 1.0f - (distance / FIRE_ROCK_WARNING_DISTANCE);
+    float radiusX = 11.0f + warningProgress * 12.0f;
+    float radiusY = 4.0f + warningProgress * 5.0f;
+    float alpha = 0.18f + warningProgress * 0.32f;
+    float sx = x - g.cameraX;
+    float sy = impactY - g.cameraY;
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glDisable(GL_TEXTURE_2D);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glColor4f(0.0f, 0.0f, 0.0f, alpha);
+
+    glBegin(GL_TRIANGLE_FAN);
+        glVertex2f(sx, sy);
+        for (int i = 0; i <= 32; i++) {
+            float angle = i * 6.28318530718f / 32.0f;
+            glVertex2f(sx + cosf(angle) * radiusX,
+                       sy + sinf(angle) * radiusY);
+        }
+    glEnd();
+
+    glColor4ub(255, 255, 255, 255);
+    glDisable(GL_BLEND);
+    glEnable(GL_TEXTURE_2D);
+}
 
 static void addProp(float x, float y, int type)
 {
@@ -403,6 +439,8 @@ void propsRender()
         }
         else if (props[i].type == PROP_FIRE_ROCK) {
             if (!props[i].landed) {
+                float impactY = g.cameraY + 100.0f;
+                drawFireRockShadow(props[i].x, props[i].y, impactY);
                 g.fireRock.show(FIRE_ROCK_SIZE, (int)sx, (int)sy, 0.0f, 0);
             } else {
                 g.fireImpact.show(FIRE_IMPACT_SIZE, (int)sx, (int)sy, 0.0f, 0);
