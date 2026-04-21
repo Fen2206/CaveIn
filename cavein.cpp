@@ -238,7 +238,7 @@ void renderGame();
 void renderScrollingGameBackground();
 void gamePhysics();
 void renderHealth();
-// void renderSettings();
+void renderSettings();
 
 //==========================================================================
 // M A I N
@@ -476,6 +476,10 @@ int check_keys(XEvent *e)
             g.level++;
             initGame();
         }
+        else if (g.state == STATE_HELP || g.state == STATE_SETTINGS)
+        {
+            g.state = STATE_MENU;
+        }
 
         break;
     case XK_Up:
@@ -577,7 +581,7 @@ void render()
 	    break;
 
     case STATE_SETTINGS:
-        // renderSettings();
+        renderSettings();
         break;
 
     case STATE_EXIT:
@@ -687,4 +691,15 @@ void renderMenu()
         else
             ggprint(&r, 24, 24, 0x00ffffff, options[i]);
     }
+}
+
+void renderSettings()
+{
+    Rect r;
+    r.bot = g.yres - 200;
+    r.left = g.xres / 2;
+    r.center = 1;
+
+    ggprint(&r, 32, 32, 0x00ffffff, "SETTINGS");
+    ggprint(&r, 24, 24, 0x0000ff00, "Back");
 }
