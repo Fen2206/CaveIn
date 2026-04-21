@@ -358,7 +358,6 @@ void normalize2d(Vec v)
     v[0] *= len;
     v[1] *= len;
 }
-
 void check_mouse(XEvent *e)
 {
     // Did the mouse move?
