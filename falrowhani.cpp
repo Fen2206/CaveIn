@@ -217,11 +217,55 @@ static int highestChunkGenerated = -1;
 static int fireRockSpawnTimer = 0;
 static const float FIRE_ROCK_SIZE   = 22.0f;
 static const float FIRE_IMPACT_SIZE = 25.0f;
-static const float FIRE_ROCK_DRIFT_SPEED = 0.45f;
-static const float FIRE_ROCK_MIN_FALL_SPEED = 1.8f;
-static const float FIRE_ROCK_FALL_SPEED_RANGE = 1.2f;
-static const float FIRE_ROCK_GRAVITY = 0.07f;
 static const float FIRE_ROCK_WARNING_DISTANCE = 220.0f;
+
+static int getDifficultyStep()
+{
+    int step = g.level - 1;
+    if (step < 0)
+        step = 0;
+    if (step > 4)
+        step = 4;
+    return step;
+}
+
+static int getFireRockSpawnInterval()
+{
+    int interval = 100 - getDifficultyStep() * 15;
+    if (interval < 45)
+        interval = 45;
+    return interval;
+}
+
+static float getFireRockDriftSpeed()
+{
+    return 0.25f + getDifficultyStep() * 0.05f;
+}
+
+static float getFireRockMinFallSpeed()
+{
+    return 1.1f + getDifficultyStep() * 0.25f;
+}
+
+static float getFireRockFallSpeedRange()
+{
+    return 0.8f + getDifficultyStep() * 0.15f;
+}
+
+static float getFireRockGravity()
+{
+    return 0.04f + getDifficultyStep() * 0.01f;
+}
+
+static float getSpikeChance()
+{
+    return 0.25f + getDifficultyStep() * 0.05f;
+}
+
+static int getFireRockDamage()
+{
+    return (g.level >= 4) ? 2 : 1;
+}
 
 static void drawFireRockShadow(float x, float y, float impactY)
 {
@@ -271,9 +315,9 @@ static void addProp(float x, float y, int type)
     props[propCount].landed = false;
 
     if (type == PROP_FIRE_ROCK) {
-        props[propCount].vx = (frand01() - 0.5f) * FIRE_ROCK_DRIFT_SPEED;
-        props[propCount].vy = FIRE_ROCK_MIN_FALL_SPEED +
-                              frand01() * FIRE_ROCK_FALL_SPEED_RANGE;
+        props[propCount].vx = (frand01() - 0.5f) * getFireRockDriftSpeed();
+        props[propCount].vy = getFireRockMinFallSpeed() +
+                              frand01() * getFireRockFallSpeedRange();
     }
 
     propCount++;
@@ -337,7 +381,7 @@ static void generateChunk(int chunkIndex)
         if (!ok)
             continue;
 
-        int type = (frand01() < 0.60f) ? PROP_DIAMOND : PROP_SPIKE;
+        int type = (frand01() < getSpikeChance()) ? PROP_SPIKE : PROP_DIAMOND;
         addProp(x, y, type);
         added++;
     }
@@ -384,7 +428,7 @@ void propsUpdateStreaming()
 
     // spawn fire rocks
     fireRockSpawnTimer++;
-    if (fireRockSpawnTimer >= 45) {
+    if (fireRockSpawnTimer >= getFireRockSpawnInterval()) {
         fireRockSpawnTimer = 0;
         if (!g.debugMode)
             spawnFireRockFromSky();
@@ -400,7 +444,7 @@ void propsUpdateStreaming()
 
         if (!props[i].landed) {
             // In your game, smaller y is lower, so subtract vy to fall
-            props[i].vy += FIRE_ROCK_GRAVITY;
+            props[i].vy += getFireRockGravity();
             props[i].x += props[i].vx;
             props[i].y -= props[i].vy;
 
@@ -503,7 +547,7 @@ void propsCheckCollisionsWithPlayer()
             }
             else if (props[i].type == PROP_FIRE_ROCK) {
                 if (g.hurtTimer <= 0) {
-                    g.health -= 1;
+                    g.health -= getFireRockDamage();
                     if (g.health < 0)
                         g.health = 0;
                     g.hurtTimer = FIRE_ROCK_HURT_COOLDOWN;

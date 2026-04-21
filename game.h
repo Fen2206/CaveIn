@@ -48,6 +48,7 @@ public:
     int score;
     int hurtTimer;
     int shieldTimer;
+    int level;
 
     float scale;
     int menuSelection;

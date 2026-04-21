@@ -34,6 +34,7 @@ Global::Global()
 
     cameraX = 0.0f;
     cameraY = 0.0f;
+    level = 1;
     propsGenerateInitial();
    
 
@@ -60,13 +61,18 @@ void initGame()
 {
 	menuSound.stop();
     gameSound.play();
-    score = 0;
     gameOver = false;
     levelTimerFrames = levelDurationFrames;
     levelPassed = false;
 
+    if (g.level < 1)
+        g.level = 1;
+    if (g.level == 1) {
+        score = 0;
+        g.score = 0;
+    }
+
     g.health = g.maxHealth;
-    g.score = 0;
     g.hurtTimer = 0;
 
     initPlayer();      // harinaga.cpp
@@ -125,6 +131,7 @@ void renderGameDisplay()
     char timerText[64];
     snprintf(timerText, sizeof(timerText), "Time: %d:%02d", minutes, seconds);
     ggprint(&r, 24, 16, 0x00ffffff, timerText);
+    ggprint(&r, 20, 16, 0x00ffffff, "Level: %d", g.level);
 
     if (levelPassed) {
         Rect passed;
@@ -157,4 +164,3 @@ void renderEndScreen()
     ggprint(&r, 20, 18, 0x00ffffff, "Score: %d", g.score);
     ggprint(&r, 18, 18, 0x00ffffff, "Press ENTER to continue");
 }
-

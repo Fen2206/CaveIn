@@ -435,24 +435,25 @@ int check_keys(XEvent *e)
         {
             g.state = STATE_MENU;
         }
-         else if (g.state == STATE_END) {
+        else if (g.state == STATE_END) {
             renderEndScreen();
-}
+        }
         else if (g.state == STATE_MENU)
         {
 
-                if (g.menuSelection == 0) {
-                    g.state = STATE_GAME;
-                    initGame();
-                }
+            if (g.menuSelection == 0) {
+                g.state = STATE_GAME;
+                g.level = 1;
+                initGame();
+            }
 
             else if (g.menuSelection == 1)
             {
                 g.state = STATE_SETTINGS;
             }
-		else if (g.menuSelection == 2) {
-			g.state = STATE_HELP;
-		}
+            else if (g.menuSelection == 2) {
+                g.state = STATE_HELP;
+            }
             else if (g.menuSelection == 3)
             {
                 return 1;
@@ -461,13 +462,15 @@ int check_keys(XEvent *e)
         //if in game and level passes press enter to restart
         else if (g.state == STATE_GAME && isLevelPassed())
         {
+            g.level++;
             initGame();
         }
 
         if (g.state == STATE_END && key == XK_Return) {
-        initGame();
-        g.state = STATE_GAME;
-}
+            g.level = 1;
+            initGame();
+            g.state = STATE_GAME;
+        }
 
 
         break;
