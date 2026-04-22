@@ -631,16 +631,8 @@ void renderHealth()
 
     //g.diamond.show(18.0f, 30, g.yres - 70, 0.0f, 0);
 
-    Rect r;
-    r.left = 20;
-    r.bot = g.yres - 78;
-    r.center = 0;
-
     //char str[64];
     //sprintf(str, "Score: %d", g.score);
-    ggprint(&r, 16, 22, 0xFFFFFFFF, "Score: %d", g.score);
-    if (g.showfps)
-    	ggprint(&r, 16, 22, 0x00ffffff, "<f> fps: %i", g.fps);
 }
 
 
@@ -661,17 +653,8 @@ void renderScrollingGameBackground()
 }
 void renderTitle()
 {
-    Rect r;
-
     g.background.show(g.xres/2, g.xres/2, g.yres/2, 0.0f);
     titleAnimationRender();
-
-    r.bot = g.yres/2 - 10;
-    r.left = g.xres/2;
-    r.center = 1;
-
-   // ggprint(&r, 16, 16, 0xff00ffff,
-    //        "By: Fenoon Alrowhani, Henry Arinaga, Joshua Garibay");
 
     Rect r2;
     r2.bot = 180;
