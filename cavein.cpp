@@ -657,47 +657,8 @@ void renderHealth()
 
     g.diamond.show(18.0f, 30, g.yres - 70, 0.0f, 0);
 
-    Rect r;
-    r.left = 20;
-    r.bot = g.yres - 78;
-    r.center = 0;
-
-    ggprint(&r, 16, 0x00ffffff, 0xFFFFFFFF, "Score: %d", g.score);
-
-     if (g.show_warning) {
-        glPushMatrix();
-        glLoadIdentity();
-        glColor3f(0.0f, 0.0f, 0.0f); // Black color
-        glBegin(GL_QUADS);
-            glVertex2f(g.xres/2 - 100, g.yres/2 + 20);
-            glVertex2f(g.xres/2 + 100, g.yres/2 + 20);
-            glVertex2f(g.xres/2 + 100, g.yres/2 - 20);
-            glVertex2f(g.xres/2 - 100, g.yres/2 - 20);
-        glEnd();
-        glPopMatrix();
-
-        r.left = g.xres/2 - 50;
-        r.bot = g.yres/2;
-        r.center = 0;
-
-         ggprint(&r, 16, 0x00ffffff, 0xFFFFFFFF, "Meteorite Coming!");
-
-        //gprint16(&r, 1000, , "Meteorite Coming!");
-    }
-
-    if (g.warning_timer > 0) {
-        g.warning_timer--;
-        if (g.warning_timer == 0) {
-            g.show_warning = 0;
-        }
-    }
-
     //char str[64];
     //sprintf(str, "Score: %d", g.score);
-    ggprint(&r, 16, 22, 0xFFFFFFFF, "Score: %d", g.score);
-    if (g.showfps)
-    	ggprint(&r, 16, 22, 0x00ffffff, "<f> fps: %i", g.fps);
-
 }
 
 
@@ -771,4 +732,17 @@ void renderSettings()
 
     ggprint(&r, 32, 32, 0x00ffffff, "SETTINGS");
     ggprint(&r, 24, 24, 0x0000ff00, "Back");
+    
+    const int NOPTIONS = 1;
+    const char *options[NOPTIONS] = {
+        "show fps - f",
+    };
+
+    for (int i = 0; i < NOPTIONS; i++)
+    {
+        if (i == g.menuSelection)
+            ggprint(&r, 24, 24, 0x0000ff00, options[i]);
+        else
+            ggprint(&r, 24, 24, 0x00ffffff, options[i]);
+    }
 }

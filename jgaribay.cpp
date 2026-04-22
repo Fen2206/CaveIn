@@ -254,7 +254,8 @@ void initPowerups()
 	npowerups = 0;
 
 	for (int i = 0; i < 20; i++) {
-		const int PADDING = 50;
+		const int PADDING = 75;
+		const int SIZE = 24;
 		float x = rand() % (g.xres - 2 * PADDING) + PADDING;
 		float y = rand() % g.yres * 20;
 
@@ -262,13 +263,13 @@ void initPowerups()
 
 		if (r == 0)
 			spawnPowerup(POWER_SHIELD, &shieldImage, &shieldSound,
-					x, y, 32, 32);
+					x, y, SIZE, SIZE);
 		else if (r == 1)
 			spawnPowerup(POWER_SPEED, &speedImage, &speedSound,
-					x, y, 32, 32);
+					x, y, SIZE, SIZE);
 		else
 			spawnPowerup(POWER_HEART, &heartImage, &heartSound,
-					x, y, 32, 32);
+					x, y, SIZE, SIZE);
 	}
 }
 
