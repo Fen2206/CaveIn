@@ -282,7 +282,6 @@ int main()
 		g.nframes = 0;
 		seconds = tmp;
 	}
-	test();
         x11.swapBuffers();
 	usleep(200); 		// pause to let X11 work better
     }
@@ -469,7 +468,12 @@ int check_keys(XEvent *e)
             {
                 return 1;
             }
-        }
+        } else if (g.state == STATE_PAUSED) {
+            if (g.pausedSelection == 0)
+                g.state = STATE_GAME;
+            else if (g.pausedSelection == 1)
+                return 1;
+	}
         //if in game and level passes press enter to restart
         else if (g.state == STATE_GAME && isLevelPassed())
         {
@@ -482,8 +486,8 @@ int check_keys(XEvent *e)
         }
 
         break;
-    case XK_Up:
     case XK_w:
+    case XK_Up:
         if (g.state == STATE_MENU)
         {
         	scrollSound.play();
@@ -497,26 +501,38 @@ int check_keys(XEvent *e)
             g.endSelection--;
             if (g.endSelection < 0)
                 g.endSelection = 1;
-        }
+        } else if (g.state == STATE_PAUSED) {
+            scrollSound.play();
+            g.pausedSelection--;
+            if (g.pausedSelection < 0)
+                g.pausedSelection = 1;
+	}
         break;
-
-    case XK_Down:
     case XK_s:
+    case XK_Down:
         if (g.state == STATE_MENU) {
         	scrollSound.play();
             g.menuSelection++;
             if (g.menuSelection > 3)
                 g.menuSelection = 0;
-        }
-        else if (g.state == STATE_END) {
-            scrollSound.play();
+        } else if (g.state == STATE_END) {
+        	scrollSound.play();
             g.endSelection++;
             if (g.endSelection > 1)
                 g.endSelection = 0;
-        }
+        } else if (g.state == STATE_PAUSED) {
+        	scrollSound.play();
+		g.pausedSelection++;
+		if (g.pausedSelection > 1)
+			g.pausedSelection = 0;
+	}
         break;
     case XK_Escape:
-        return 1;
+	if (g.state == STATE_GAME)
+		g.state = STATE_PAUSED;
+	else if (g.state == STATE_PAUSED)
+		g.state = STATE_GAME;
+	 break;
     case XK_m:
         g.mouse_cursor_on = !g.mouse_cursor_on;
         x11.show_mouse_cursor(g.mouse_cursor_on);
@@ -556,37 +572,35 @@ void render()
 
     switch (g.state)
     {
-    case STATE_TITLE:
-        renderTitle();
-        break;
-
-    case STATE_MENU:
-        renderMenu();
-        break;
-    case STATE_END:
-        renderEndScreen();
-        break;
-
-        case STATE_GAME:
-            renderScrollingGameBackground();
-           // g.game.show(g.xres/2, g.xres/2, g.yres/2, 0.0f); 
-            renderGame();
-            propsRender();
-            renderHealth();
-            renderGameDisplay();
-            break; 
-
-	case STATE_HELP:
-	    renderHelp();
-	    break;
-
-    case STATE_SETTINGS:
-        renderSettings();
-        break;
-
-    case STATE_EXIT:
-        exit(0);
-        break;
+	    case STATE_TITLE:
+		    renderTitle();
+		    break;
+	    case STATE_MENU:
+		    renderMenu();
+		    break;
+	    case STATE_END:
+		    renderEndScreen();
+		    break;
+	    case STATE_GAME:
+		    renderScrollingGameBackground();
+		    // g.game.show(g.xres/2, g.xres/2, g.yres/2, 0.0f); 
+		    renderGame();
+		    propsRender();
+		    renderHealth();
+		    renderGameDisplay();
+		    break; 
+	    case STATE_HELP:
+		    renderHelp();
+		    break;
+	    case STATE_SETTINGS:
+		    renderSettings();
+		    break;
+	    case STATE_PAUSED:
+		    renderPaused();
+		    break;
+	    case STATE_EXIT:
+		    exit(0);
+		    break;
     }
 }
 void renderHealth()
@@ -617,16 +631,8 @@ void renderHealth()
 
     //g.diamond.show(18.0f, 30, g.yres - 70, 0.0f, 0);
 
-    Rect r;
-    r.left = 20;
-    r.bot = g.yres - 78;
-    r.center = 0;
-
     //char str[64];
     //sprintf(str, "Score: %d", g.score);
-    ggprint(&r, 16, 22, 0xFFFFFFFF, "Score: %d", g.score);
-    if (g.showfps)
-    	ggprint(&r, 16, 22, 0x00ffffff, "<f> fps: %i", g.fps);
 }
 
 
@@ -647,17 +653,8 @@ void renderScrollingGameBackground()
 }
 void renderTitle()
 {
-    Rect r;
-
     g.background.show(g.xres/2, g.xres/2, g.yres/2, 0.0f);
     titleAnimationRender();
-
-    r.bot = g.yres/2 - 10;
-    r.left = g.xres/2;
-    r.center = 1;
-
-   // ggprint(&r, 16, 16, 0xff00ffff,
-    //        "By: Fenoon Alrowhani, Henry Arinaga, Joshua Garibay");
 
     Rect r2;
     r2.bot = 180;
@@ -702,4 +699,17 @@ void renderSettings()
 
     ggprint(&r, 32, 32, 0x00ffffff, "SETTINGS");
     ggprint(&r, 24, 24, 0x0000ff00, "Back");
+    
+    const int NOPTIONS = 1;
+    const char *options[NOPTIONS] = {
+        "show fps - f",
+    };
+
+    for (int i = 0; i < NOPTIONS; i++)
+    {
+        if (i == g.menuSelection)
+            ggprint(&r, 24, 24, 0x0000ff00, options[i]);
+        else
+            ggprint(&r, 24, 24, 0x00ffffff, options[i]);
+    }
 }

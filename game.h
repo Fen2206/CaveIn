@@ -9,6 +9,7 @@ enum GameState {
     STATE_GAME,
     STATE_HELP,
     STATE_SETTINGS,
+    STATE_PAUSED,
     STATE_EXIT,
     STATE_END
 };
@@ -48,11 +49,13 @@ public:
     int score;
     int hurtTimer;
     int shieldTimer;
+    int speedTimer;
     int level;
 
     float scale;
     int menuSelection;
     int endSelection;
+    int pausedSelection;
     GameState state;
     int debugMode;
 
@@ -61,6 +64,7 @@ public:
 };
 
 extern Global g;
+extern float speed;
 
 void initGame();
 void gamePhysics();

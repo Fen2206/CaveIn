@@ -31,6 +31,7 @@ Global::Global()
     state = STATE_TITLE;
     menuSelection = 0;
     endSelection = 0;
+    pausedSelection = 0;
 
 
     cameraX = 0.0f;
@@ -47,6 +48,7 @@ Global::Global()
     fps = 0;
     showfps = 1;
     shieldTimer = 0;
+    speedTimer = 0;
     debugMode = 0;
 }
 
@@ -55,6 +57,7 @@ bool gameOver = false;
 static const int levelDurationFrames = 30 * 60;
 static int levelTimerFrames = levelDurationFrames;
 static bool levelPassed = false;
+float speed = 4.0f;
 
 void checkCollisions();
 
@@ -102,6 +105,7 @@ void renderGame()
     drawPowerups();
     drawStatusEffects();
     drawPlayer();
+	test();
 }
 
 void checkCollisions()
@@ -122,8 +126,8 @@ int getLevelTimeRemaining()
 void renderGameDisplay()
 {
     Rect r;
-    r.left = 20;
-    r.bot = g.yres - 30;
+    r.left = g.xres - 120.0f;
+    r.bot = g.yres - 30.0f;
     r.center = 0;
 
     const int totalSeconds = getLevelTimeRemaining();
@@ -131,8 +135,11 @@ void renderGameDisplay()
     const int seconds = totalSeconds % 60;
     char timerText[64];
     snprintf(timerText, sizeof(timerText), "Time: %d:%02d", minutes, seconds);
-    ggprint(&r, 24, 16, 0x00ffffff, timerText);
-    ggprint(&r, 20, 16, 0x00ffffff, "Level: %d", g.level);
+    ggprint(&r, 16, 20, 0x00ffffff, timerText);
+    ggprint(&r, 16, 20, 0x00ffffff, "Level: %d", g.level);
+    ggprint(&r, 16, 20, 0x00ffffff, "Score: %i", g.score);
+    if (g.showfps)
+    	ggprint(&r, 16, 20, 0x00ffffff, "fps: %i", g.fps);
 
     if (levelPassed) {
         Rect passed;
@@ -143,6 +150,7 @@ void renderGameDisplay()
         ggprint(&passed, 20, 18, 0x00ffffff, "Next Level");
         ggprint(&passed, 18, 18, 0x00ffffff, "Press ENTER to continue");
     }
+    drawHUD();
 }
 
 void renderEndScreen()

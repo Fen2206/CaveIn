@@ -18,10 +18,6 @@ extern float py;
 static const int SPIKE_HURT_COOLDOWN = 60;
 static const int FIRE_ROCK_HURT_COOLDOWN = 45;
 
-void initPowerups() {}
-void updatePowerups() {}
-void drawPowerups() {}
-
 void initGems() {}
 void updateGems() {}
 void drawGems() {}
@@ -557,7 +553,7 @@ void propsCheckCollisionsWithPlayer()
                 }
             }
             else if (props[i].type == PROP_FIRE_ROCK) {
-                if (g.hurtTimer <= 0) {
+                if (g.hurtTimer <= 0 && g.shieldTimer <= 0) {
                     g.health -= getFireRockDamage();
                     if (g.health < 0)
                         g.health = 0;
@@ -577,8 +573,8 @@ void gamePhysics()
     }
 
     updatePlayer();
-    updatePowerups();
     updateGems();
+    updatePowerups();
 
     g.cameraX = 0.0f;
     g.cameraY = py - (g.yres * 0.5f);
@@ -592,6 +588,12 @@ void gamePhysics()
     }
     if (g.shieldTimer > 0) {
         g.shieldTimer--;
+    }
+    if (g.speedTimer > 0) {
+        g.speedTimer--;
+	speed = 7.0f;
+    } else {
+	speed = 4.0f;
     }
 
     propsUpdateStreaming();
