@@ -282,7 +282,6 @@ int main()
 		g.nframes = 0;
 		seconds = tmp;
 	}
-	test();
         x11.swapBuffers();
 	usleep(200); 		// pause to let X11 work better
     }

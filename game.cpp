@@ -45,6 +45,7 @@ Global::Global()
     fps = 0;
     showfps = 1;
     shieldTimer = 0;
+    speedTimer = 0;
     debugMode = 0;
 }
 
@@ -53,6 +54,7 @@ bool gameOver = false;
 static const int levelDurationFrames = 90 * 60;
 static int levelTimerFrames = levelDurationFrames;
 static bool levelPassed = false;
+float speed = 4.0f;
 
 void checkCollisions();
 
@@ -95,6 +97,7 @@ void renderGame()
     drawPowerups();
     drawStatusEffects();
     drawPlayer();
+	test();
 }
 
 void checkCollisions()
@@ -135,6 +138,7 @@ void renderGameDisplay()
         ggprint(&passed, 20, 18, 0x00ffffff, "Next Level");
         ggprint(&passed, 18, 18, 0x00ffffff, "Press ENTER to continue");
     }
+    drawHUD();
 }
 
 void renderEndScreen()

@@ -20,7 +20,6 @@ enum Direction {
 static Direction dir = DIR_S;
 float px = 100.0f;
 float py = 100.0f;
-static float speed = 4.0f;
 static float sparkleTimer = 0.0f;
 static float sparkleAngle = 0.0f;
 static const float sparkleDuration = 0.6f;

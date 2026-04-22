@@ -48,6 +48,7 @@ public:
     int score;
     int hurtTimer;
     int shieldTimer;
+    int speedTimer;
 
     float scale;
     int menuSelection;
@@ -59,6 +60,7 @@ public:
 };
 
 extern Global g;
+extern float speed;
 
 void initGame();
 void gamePhysics();

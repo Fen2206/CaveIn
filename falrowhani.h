@@ -15,11 +15,6 @@ void titleAnimationRender();
 //static void settleRock(int i, float newY);
 
 
-void initPowerups();
-void updatePowerups();
-void drawPowerups();
-
-
 void initGems();
 void updateGems();
 void drawGems();
