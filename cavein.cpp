@@ -16,6 +16,9 @@
 #include <ctime>
 #include <cmath>
 #include <X11/Xlib.h>
+#include <GL/gl.h> 		
+#include <GL/glu.h>
+
 // #include <X11/Xutil.h>
 // #include <GL/gl.h>
 // #include <GL/glu.h>
@@ -28,6 +31,7 @@
 #include "jgaribay.h"
 #include "game.h"
 #include "input.h"
+
 // defined types
 typedef float Flt;
 typedef float Vec[3];
@@ -162,6 +166,15 @@ public:
             reshape_window(xce.width, xce.height);
         }
     }
+    void draw_text(int x, int y, const char *str)
+{
+    int yx11 = g.yres - y;
+
+    GC gc = XCreateGC(dpy, win, 0, NULL);
+    XSetForeground(dpy, gc, 0x00ffffff);
+    XDrawString(dpy, win, gc, x, yx11, str, (int)strlen(str));
+    XFreeGC(dpy, gc);
+}
     void reshape_window(int width, int height)
     {
         // window has been resized.
@@ -197,6 +210,7 @@ public:
     {
         XWarpPointer(dpy, None, win, 0, 0, 0, 0, x, y);
     }
+
     void show_mouse_cursor(const int onoff)
     {
         // printf("show_mouse_cursor(%i)\n", onoff); fflush(stdout);
@@ -283,7 +297,18 @@ int main()
 		seconds = tmp;
 	}
         x11.swapBuffers();
+
+/*
+        g.frameCount++; 
+		time_t curr =time(NULL);
+		if (curr != g.final) { 
+			g.fps =g.frameCount; 
+			g.frameCount =0; 
+			g.final = curr;*/
+		//}
+
 	usleep(200); 		// pause to let X11 work better
+
     }
     cleanup_fonts();
     // logClose();
@@ -357,7 +382,6 @@ void normalize2d(Vec v)
     v[0] *= len;
     v[1] *= len;
 }
-
 void check_mouse(XEvent *e)
 {
     // Did the mouse move?
@@ -603,6 +627,8 @@ void render()
 		    break;
     }
 }
+
+
 void renderHealth()
 {
     extern bool gameOver;
@@ -629,7 +655,7 @@ void renderHealth()
 
     bar->show(120.0f, 110, g.yres - 35, 0.0f, 0);
 
-    //g.diamond.show(18.0f, 30, g.yres - 70, 0.0f, 0);
+    g.diamond.show(18.0f, 30, g.yres - 70, 0.0f, 0);
 
     //char str[64];
     //sprintf(str, "Score: %d", g.score);
@@ -653,11 +679,18 @@ void renderScrollingGameBackground()
 }
 void renderTitle()
 {
+   
+
     g.background.show(g.xres/2, g.xres/2, g.yres/2, 0.0f);
     titleAnimationRender();
 
+    Rect r;
+    r.bot = g.yres/2 - 10;
+    r.left = g.xres/2;
+    r.center = 1;
+
     Rect r2;
-    r2.bot = 180;
+    r2.bot = 250;
     r2.left = g.xres/2;
     r2.center = 1;
 

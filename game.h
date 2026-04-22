@@ -22,8 +22,11 @@ public:
     float cameraX;
     float cameraY;
     int fps;
+    int frameCount;
+    time_t final; 
     int nframes;
     bool showfps;
+
 
     Image background;
     Image game;
@@ -48,10 +51,11 @@ public:
     int maxHealth;
     int score;
     int hurtTimer;
+    int show_warning;
+    int warning_timer;
     int shieldTimer;
     int speedTimer;
     int level;
-
     float scale;
     int menuSelection;
     int endSelection;

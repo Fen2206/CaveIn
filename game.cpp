@@ -30,8 +30,12 @@ Global::Global()
     mouse_cursor_on = 1;
     state = STATE_TITLE;
     menuSelection = 0;
+    fps=0;
+    frameCount=0;
+    final=0;
     endSelection = 0;
     pausedSelection = 0;
+
 
 
     cameraX = 0.0f;
@@ -44,12 +48,15 @@ Global::Global()
     health = 8;
     score = 0;
     hurtTimer = 0;
+    show_warning = 0;
+    warning_timer = 0;
     nframes = 0;
     fps = 0;
     showfps = 1;
     shieldTimer = 0;
     speedTimer = 0;
     debugMode = 0;
+
 }
 
 int score = 0;
