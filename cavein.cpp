@@ -676,8 +676,8 @@ void renderHealth()
         glEnd();
         glPopMatrix();
 
-        r.left = g.xres/2 - 50;
-        r.bot = g.yres/2;
+        r.left = g.xres/2 - 220;
+        r.bot = g.yres/2+ 190;
         r.center = 0;
 
          ggprint(&r, 16, 0x00ffffff, 0xFFFFFFFF, "Meteorite Coming!");

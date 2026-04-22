@@ -530,7 +530,7 @@ void propsCheckCollisionsWithPlayer()
         }
         else if (props[i].type == PROP_FIRE_ROCK) {
             g.show_warning = 1;
-            g.warning_timer = 50;
+            g.warning_timer = 10;
             hitW = props[i].landed ? FIRE_IMPACT_SIZE : FIRE_ROCK_SIZE;
             hitH = hitW;
         }
