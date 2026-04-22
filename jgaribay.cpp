@@ -6,6 +6,9 @@
 #include "game.h" 	// for global class
 #include "fonts.h" 	// for ggprint
 #include <cstring>
+#include <cstdlib>
+
+#define MAX_POWERUPS 100
 
 Openal oal;
 Sound  clickSound("./sounds/click.wav",  1.0, 1.0, 0);
@@ -18,13 +21,14 @@ Sound   hurtSound("./sounds/hurt.wav",   1.0, 1.0, 0);
 Sound shieldSound("./sounds/shield.wav", 1.0, 1.0, 0);
 Sound  speedSound("./sounds/speed.wav",  1.0, 1.0, 0);
 Sound  heartSound("./sounds/heart.wav",  1.0, 1.0, 0);
+
 Image shieldImage("./assets/shield.png");
 Image bubbleImage("./assets/bubble.png");
 Image speedImage("./assets/speed.png");
 Image heartImage("./assets/heart.png");
-Powerup shieldPowerup(POWER_SHIELD, &shieldImage, &shieldSound, 200, 200, 32, 32);
-Powerup  speedPowerup(POWER_SPEED, &speedImage, &speedSound, 250, 200, 32, 32);
-Powerup  heartPowerup(POWER_HEART, &heartImage, &heartSound, 300, 200, 32, 32);
+
+Powerup powerup[MAX_POWERUPS];
+int npowerups = 0;
 
 // ----- Sound class -----
 // note: consider adding currentMusic variable
@@ -91,7 +95,7 @@ Openal::~Openal()
 // ----- Powerup class -----
 // note: two options, either make inherited classes for each type of powerup
 // or make an enum instead and use that
-Powerup::Powerup(PowerupType type, Image *image, Sound *s, float x, float y, float w, float h)
+void Powerup::init(PowerupType type, Image *image, Sound *s, float x, float y, float w, float h)
 {
 	this->type = type;
 	sound = s;
@@ -141,6 +145,8 @@ void Powerup::activate()
 		g.shieldTimer = 120;
 	} else if (type == POWER_HEART) {
 		g.health += 1;
+	} else if (type == POWER_SPEED) {
+		g.speedTimer = 300;
 	}
 
 	active = 0;
@@ -168,11 +174,9 @@ bool Powerup::isActive()
 extern float px, py;
 void test()
 {
-	const float pw = 32.0f;
-	const float ph = 32.0f;
-
 	if (g_keys[XK_y])
 		hurtSound.play();
+	/*
 	shieldPowerup.update(px, py, pw, ph);
 	if (shieldPowerup.isActive())
 		shieldPowerup.draw();
@@ -184,6 +188,7 @@ void test()
 	heartPowerup.update(px, py, pw, ph);
 	if (heartPowerup.isActive())
 		heartPowerup.draw();
+	*/
 }
 
 void init_misc()
@@ -202,7 +207,8 @@ void renderHelp()
 	r.center = 0;
 
 	const float imgWidth = 16.0;
-	shieldImage.show(imgWidth, imgWidth + 10.0f, g.yres - 10.0f - imgWidth, 0.0f);
+	shieldImage.show(imgWidth, imgWidth + 10.0f, g.yres - 10.0f - imgWidth,
+			0.0f);
 	const char *list[] = {
 		"Objective: collect all gems before the timer ends use powerups ",
 		"to help along the way",
@@ -216,6 +222,13 @@ void renderHelp()
 	// better way to loop through menu from another lab
 	while (strlen(list[i]) > 0)
 		ggprint(&r, 10, 40, 0x00ffaaff, list[i++]);
+
+	Rect back;
+	back.bot = 80.0f;
+	back.left = g.xres / 2;
+	back.center = 1;
+
+	ggprint(&back, 24, 24, 0x0000ff00, "Back");
 }
 
 void drawStatusEffects()
@@ -225,5 +238,111 @@ void drawStatusEffects()
 	const float imgWidth = 24.0;
 	if (g.shieldTimer > 0)
 		bubbleImage.show(imgWidth, sx, sy, 0.0f);
+}
+
+void spawnPowerup(PowerupType type, Image *img, Sound *s, float x, float y,
+		float w, float h)
+{
+	if (npowerups < MAX_POWERUPS) {
+		powerup[npowerups].init(type, img, s, x, y, w, h);
+		npowerups++;
+	}
+}
+
+void initPowerups()
+{
+	npowerups = 0;
+
+	for (int i = 0; i < 20; i++) {
+		const int PADDING = 50;
+		float x = rand() % (g.xres - 2 * PADDING) + PADDING;
+		float y = rand() % g.yres * 20;
+
+		int r = rand() % 3;
+
+		if (r == 0)
+			spawnPowerup(POWER_SHIELD, &shieldImage, &shieldSound,
+					x, y, 32, 32);
+		else if (r == 1)
+			spawnPowerup(POWER_SPEED, &speedImage, &speedSound,
+					x, y, 32, 32);
+		else
+			spawnPowerup(POWER_HEART, &heartImage, &heartSound,
+					x, y, 32, 32);
+	}
+}
+
+void drawPowerups()
+{
+	for (int i = 0; i < npowerups; i++) {
+		if (powerup[i].isActive())
+			powerup[i].draw();
+	}
+}
+
+void updatePowerups()
+{
+	const float pw = 32.0f;
+	const float ph = 32.0f;
+
+	for (int i = 0; i < npowerups; i++) {
+		powerup[i].update(px, py, pw, ph);
+	}
+}
+
+void drawHUD()
+{
+	Rect r;
+	r.bot = 50.0f;
+	r.left = 10.0f;
+	r.center = 0;
+	ggprint(&r, 12, 0, 0x00ffffff, "Powerups");
+	
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glColor4f(1.0f, 1.0f, 1.0f, 0.25f);
+	glBegin(GL_QUADS);
+		glVertex2f(10, 50);
+		glVertex2f(150, 50);
+		glVertex2f(150, 10);
+		glVertex2f(10, 10);
+	glEnd();
+
+	glDisable(GL_BLEND);
+	if (g.shieldTimer > 0)
+		shieldImage.show(16, 30, 30, 0.0f);
+	if (g.speedTimer > 0)
+		speedImage.show(16, 70, 30, 0.0f);
+}
+
+void renderPaused()
+{
+	Rect r;
+	r.bot = g.yres - 200.0f;
+	r.left = g.xres / 2.0f;
+	r.center = 1;
+	ggprint(&r, 32, 32, 0x00ffffff, "PAUSED");
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glColor4f(0.5f, 0.0f, 0.5f, 0.25f);
+	glBegin(GL_QUADS);
+		glVertex2i(0, 0);
+		glVertex2i(0, g.yres);
+		glVertex2i(g.xres, g.yres);
+		glVertex2i(g.xres, 0);
+	glEnd();
+	
+	glDisable(GL_BLEND);
+	const int NOPTIONS = 2;
+	const char *list[NOPTIONS] = {
+		"Resume",
+		"Exit"
+	};
+
+	for (int i = 0; i < NOPTIONS; i++)
+		ggprint(&r, 24, 30, (i == g.pausedSelection) ?
+				0x0000ff00 : 0x00ffffff, list[i]);
 }
 

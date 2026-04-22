@@ -1,5 +1,5 @@
-#ifndef JGARIBAY_H
-#define JGARIBAY_H
+#ifndef _JGARIBAY_H_
+#define _JGARIBAY_H_
 #include <AL/alut.h>
 #include "image.h"
 
@@ -48,8 +48,8 @@ class Powerup {
 		Image *image;
 		Sound *sound;
 	public:
-		Powerup(PowerupType type, const char *, Sound *sound, float x, float y, float w, float h);
-		Powerup(PowerupType type, Image *image, Sound *sound, float x, float y, float w, float h);
+		void init(PowerupType type, Image *image, Sound *sound, float x,
+				float y, float w, float h);
 		void draw();
 		bool collides(float px, float py, float pw, float ph);
 		void activate();
@@ -71,6 +71,13 @@ void test();
 void renderHelp();
 void init_misc();
 void drawStatusEffects();
+void spawnPowerup(PowerupType type, Image *image, Sound *sound, float x,
+		float y, float w, float h);
+void initPowerups();
+void drawPowerups();
+void updatePowerups();
+void drawHUD();
+void renderPaused();
 
-#endif
+#endif // _JGARIBAY_H_
 

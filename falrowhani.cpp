@@ -18,10 +18,6 @@ extern float py;
 static const int SPIKE_HURT_COOLDOWN = 60;
 static const int FIRE_ROCK_HURT_COOLDOWN = 45;
 
-void initPowerups() {}
-void updatePowerups() {}
-void drawPowerups() {}
-
 void initGems() {}
 void updateGems() {}
 void drawGems() {}
@@ -193,6 +189,7 @@ void titleAnimationRender()
 struct Prop {
     float x, y;
     float vx, vy;
+    float impactX, impactY;
     int type;
     bool active;
     bool landed;
@@ -244,17 +241,17 @@ static float getFireRockDriftSpeed()
 
 static float getFireRockMinFallSpeed()
 {
-    return 1.1f + getDifficultyStep() * 0.25f;
+    return 1.45f + getDifficultyStep() * 0.25f;
 }
 
 static float getFireRockFallSpeedRange()
 {
-    return 0.8f + getDifficultyStep() * 0.15f;
+    return 0.95f + getDifficultyStep() * 0.15f;
 }
 
 static float getFireRockGravity()
 {
-    return 0.04f + getDifficultyStep() * 0.01f;
+    return 0.055f + getDifficultyStep() * 0.01f;
 }
 
 static float getSpikeChance()
@@ -310,6 +307,8 @@ static void addProp(float x, float y, int type)
     props[propCount].y = y;
     props[propCount].vx = 0.0f;
     props[propCount].vy = 0.0f;
+    props[propCount].impactX = x;
+    props[propCount].impactY = y;
     props[propCount].type = type;
     props[propCount].active = true;
     props[propCount].landed = false;
@@ -390,14 +389,25 @@ static void generateChunk(int chunkIndex)
 static void spawnFireRockFromSky()
 {
     float center = g.xres * 0.5f;
-    float halfWidth = 90.0f;
+    float horizontalLimit = 140.0f;
+    float targetRadius = 35.0f;
 
-    float x = (center - halfWidth) + frand01() * (halfWidth * 2.0f);
+    float targetX = px + (frand01() - 0.5f) * (targetRadius * 2.0f);
+    if (targetX < center - horizontalLimit)
+        targetX = center - horizontalLimit;
+    if (targetX > center + horizontalLimit)
+        targetX = center + horizontalLimit;
+
+    float targetY = py + (frand01() - 0.5f) * (targetRadius * 2.0f);
+    if (targetY < 0.0f)
+        targetY = 0.0f;
 
     // spawn above visible area
     float y = g.cameraY + g.yres + 120.0f;
 
-    addProp(x, y, PROP_FIRE_ROCK);
+    addProp(targetX, y, PROP_FIRE_ROCK);
+    props[propCount - 1].impactX = targetX;
+    props[propCount - 1].impactY = targetY;
 }
 
 void propsGenerateInitial()
@@ -448,11 +458,9 @@ void propsUpdateStreaming()
             props[i].x += props[i].vx;
             props[i].y -= props[i].vy;
 
-            // land near lower part of visible screen
-            float impactY = g.cameraY + 100.0f;
-
-            if (props[i].y <= impactY) {
-                props[i].y = impactY;
+            if (props[i].y <= props[i].impactY) {
+                props[i].x = props[i].impactX;
+                props[i].y = props[i].impactY;
                 props[i].vx = 0.0f;
                 props[i].vy = 0.0f;
                 props[i].landed = true;
@@ -483,8 +491,7 @@ void propsRender()
         }
         else if (props[i].type == PROP_FIRE_ROCK) {
             if (!props[i].landed) {
-                float impactY = g.cameraY + 100.0f;
-                drawFireRockShadow(props[i].x, props[i].y, impactY);
+                drawFireRockShadow(props[i].impactX, props[i].y, props[i].impactY);
                 g.fireRock.show(FIRE_ROCK_SIZE, (int)sx, (int)sy, 0.0f, 0);
             } else {
                 g.fireImpact.show(FIRE_ROCK_SIZE, (int)sx, (int)sy, 0.0f, 0);
@@ -549,7 +556,7 @@ void propsCheckCollisionsWithPlayer()
                 }
             }
             else if (props[i].type == PROP_FIRE_ROCK) {
-                if (g.hurtTimer <= 0) {
+                if (g.hurtTimer <= 0 && g.shieldTimer <= 0) {
                     g.health -= getFireRockDamage();
                     if (g.health < 0)
                         g.health = 0;
@@ -570,8 +577,8 @@ void gamePhysics()
     }
 
     updatePlayer();
-    updatePowerups();
     updateGems();
+    updatePowerups();
 
     g.cameraX = 0.0f;
     g.cameraY = py - (g.yres * 0.5f);
@@ -585,6 +592,12 @@ void gamePhysics()
     }
     if (g.shieldTimer > 0) {
         g.shieldTimer--;
+    }
+    if (g.speedTimer > 0) {
+        g.speedTimer--;
+	speed = 7.0f;
+    } else {
+	speed = 4.0f;
     }
 
     propsUpdateStreaming();

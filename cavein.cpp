@@ -252,7 +252,7 @@ void renderGame();
 void renderScrollingGameBackground();
 void gamePhysics();
 void renderHealth();
-// void renderSettings();
+void renderSettings();
 
 //==========================================================================
 // M A I N
@@ -296,7 +296,6 @@ int main()
 		g.nframes = 0;
 		seconds = tmp;
 	}
-	test();
         x11.swapBuffers();
 
 /*
@@ -493,17 +492,26 @@ int check_keys(XEvent *e)
             {
                 return 1;
             }
-        }
+        } else if (g.state == STATE_PAUSED) {
+            if (g.pausedSelection == 0)
+                g.state = STATE_GAME;
+            else if (g.pausedSelection == 1)
+                return 1;
+	}
         //if in game and level passes press enter to restart
         else if (g.state == STATE_GAME && isLevelPassed())
         {
             g.level++;
             initGame();
         }
+        else if (g.state == STATE_HELP || g.state == STATE_SETTINGS)
+        {
+            g.state = STATE_MENU;
+        }
 
         break;
-    case XK_Up:
     case XK_w:
+    case XK_Up:
         if (g.state == STATE_MENU)
         {
         	scrollSound.play();
@@ -517,26 +525,38 @@ int check_keys(XEvent *e)
             g.endSelection--;
             if (g.endSelection < 0)
                 g.endSelection = 1;
-        }
+        } else if (g.state == STATE_PAUSED) {
+            scrollSound.play();
+            g.pausedSelection--;
+            if (g.pausedSelection < 0)
+                g.pausedSelection = 1;
+	}
         break;
-
-    case XK_Down:
     case XK_s:
+    case XK_Down:
         if (g.state == STATE_MENU) {
         	scrollSound.play();
             g.menuSelection++;
             if (g.menuSelection > 3)
                 g.menuSelection = 0;
-        }
-        else if (g.state == STATE_END) {
-            scrollSound.play();
+        } else if (g.state == STATE_END) {
+        	scrollSound.play();
             g.endSelection++;
             if (g.endSelection > 1)
                 g.endSelection = 0;
-        }
+        } else if (g.state == STATE_PAUSED) {
+        	scrollSound.play();
+		g.pausedSelection++;
+		if (g.pausedSelection > 1)
+			g.pausedSelection = 0;
+	}
         break;
     case XK_Escape:
-        return 1;
+	if (g.state == STATE_GAME)
+		g.state = STATE_PAUSED;
+	else if (g.state == STATE_PAUSED)
+		g.state = STATE_GAME;
+	 break;
     case XK_m:
         g.mouse_cursor_on = !g.mouse_cursor_on;
         x11.show_mouse_cursor(g.mouse_cursor_on);
@@ -576,37 +596,35 @@ void render()
 
     switch (g.state)
     {
-    case STATE_TITLE:
-        renderTitle();
-        break;
-
-    case STATE_MENU:
-        renderMenu();
-        break;
-    case STATE_END:
-        renderEndScreen();
-        break;
-
-        case STATE_GAME:
-            renderScrollingGameBackground();
-           // g.game.show(g.xres/2, g.xres/2, g.yres/2, 0.0f); 
-            renderGame();
-            propsRender();
-            renderHealth();
-            renderGameDisplay();
-            break; 
-
-	case STATE_HELP:
-	    renderHelp();
-	    break;
-
-    case STATE_SETTINGS:
-        // renderSettings();
-        break;
-
-    case STATE_EXIT:
-        exit(0);
-        break;
+	    case STATE_TITLE:
+		    renderTitle();
+		    break;
+	    case STATE_MENU:
+		    renderMenu();
+		    break;
+	    case STATE_END:
+		    renderEndScreen();
+		    break;
+	    case STATE_GAME:
+		    renderScrollingGameBackground();
+		    // g.game.show(g.xres/2, g.xres/2, g.yres/2, 0.0f); 
+		    renderGame();
+		    propsRender();
+		    renderHealth();
+		    renderGameDisplay();
+		    break; 
+	    case STATE_HELP:
+		    renderHelp();
+		    break;
+	    case STATE_SETTINGS:
+		    renderSettings();
+		    break;
+	    case STATE_PAUSED:
+		    renderPaused();
+		    break;
+	    case STATE_EXIT:
+		    exit(0);
+		    break;
     }
 }
 
@@ -742,4 +760,15 @@ void renderMenu()
         else
             ggprint(&r, 24, 24, 0x00ffffff, options[i]);
     }
+}
+
+void renderSettings()
+{
+    Rect r;
+    r.bot = g.yres - 200;
+    r.left = g.xres / 2;
+    r.center = 1;
+
+    ggprint(&r, 32, 32, 0x00ffffff, "SETTINGS");
+    ggprint(&r, 24, 24, 0x0000ff00, "Back");
 }
