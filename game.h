@@ -9,6 +9,7 @@ enum GameState {
     STATE_GAME,
     STATE_HELP,
     STATE_SETTINGS,
+    STATE_PAUSED,
     STATE_EXIT,
     STATE_END
 };
@@ -54,6 +55,7 @@ public:
     float scale;
     int menuSelection;
     int endSelection;
+    int pausedSelection;
     GameState state;
     int debugMode;
 

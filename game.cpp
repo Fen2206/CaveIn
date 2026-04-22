@@ -31,6 +31,7 @@ Global::Global()
     state = STATE_TITLE;
     menuSelection = 0;
     endSelection = 0;
+    pausedSelection = 0;
 
 
     cameraX = 0.0f;

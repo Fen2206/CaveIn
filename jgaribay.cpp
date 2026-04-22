@@ -254,8 +254,9 @@ void initPowerups()
 	npowerups = 0;
 
 	for (int i = 0; i < 20; i++) {
-		float x = rand() % 2000;
-		float y = rand() % 2000;
+		const int PADDING = 50;
+		float x = rand() % (g.xres - 2 * PADDING) + PADDING;
+		float y = rand() % g.yres * 20;
 
 		int r = rand() % 3;
 
@@ -313,5 +314,35 @@ void drawHUD()
 		shieldImage.show(16, 30, 30, 0.0f);
 	if (g.speedTimer > 0)
 		speedImage.show(16, 70, 30, 0.0f);
+}
+
+void renderPaused()
+{
+	Rect r;
+	r.bot = g.yres - 200.0f;
+	r.left = g.xres / 2.0f;
+	r.center = 1;
+	ggprint(&r, 32, 32, 0x00ffffff, "PAUSED");
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glColor4f(0.5f, 0.0f, 0.5f, 0.25f);
+	glBegin(GL_QUADS);
+		glVertex2i(0, 0);
+		glVertex2i(0, g.yres);
+		glVertex2i(g.xres, g.yres);
+		glVertex2i(g.xres, 0);
+	glEnd();
+	
+	glDisable(GL_BLEND);
+	const int NOPTIONS = 2;
+	const char *list[NOPTIONS] = {
+		"Resume",
+		"Exit"
+	};
+
+	for (int i = 0; i < NOPTIONS; i++)
+		ggprint(&r, 24, 30, (i == g.pausedSelection) ?
+				0x0000ff00 : 0x00ffffff, list[i]);
 }
 

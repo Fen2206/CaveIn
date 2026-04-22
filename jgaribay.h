@@ -77,6 +77,7 @@ void initPowerups();
 void drawPowerups();
 void updatePowerups();
 void drawHUD();
+void renderPaused();
 
 #endif // _JGARIBAY_H_
 
