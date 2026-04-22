@@ -49,9 +49,11 @@ public:
     int hurtTimer;
     int shieldTimer;
     int speedTimer;
+    int level;
 
     float scale;
     int menuSelection;
+    int endSelection;
     GameState state;
     int debugMode;
 

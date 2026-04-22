@@ -222,6 +222,13 @@ void renderHelp()
 	// better way to loop through menu from another lab
 	while (strlen(list[i]) > 0)
 		ggprint(&r, 10, 40, 0x00ffaaff, list[i++]);
+
+	Rect back;
+	back.bot = 80.0f;
+	back.left = g.xres / 2;
+	back.center = 1;
+
+	ggprint(&back, 24, 24, 0x0000ff00, "Back");
 }
 
 void drawStatusEffects()
