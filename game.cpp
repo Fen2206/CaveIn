@@ -139,7 +139,7 @@ void renderGameDisplay()
     ggprint(&r, 16, 20, 0x00ffffff, "Level: %d", g.level);
     ggprint(&r, 16, 20, 0x00ffffff, "Score: %i", g.score);
     if (g.showfps)
-    	ggprint(&r, 16, 20, 0x00ffffff, "[f] fps: %i", g.fps);
+    	ggprint(&r, 16, 20, 0x00ffffff, "fps: %i", g.fps);
 
     if (levelPassed) {
         Rect passed;

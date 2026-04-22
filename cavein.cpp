@@ -699,4 +699,17 @@ void renderSettings()
 
     ggprint(&r, 32, 32, 0x00ffffff, "SETTINGS");
     ggprint(&r, 24, 24, 0x0000ff00, "Back");
+    
+    const int NOPTIONS = 1;
+    const char *options[NOPTIONS] = {
+        "show fps - f",
+    };
+
+    for (int i = 0; i < NOPTIONS; i++)
+    {
+        if (i == g.menuSelection)
+            ggprint(&r, 24, 24, 0x0000ff00, options[i]);
+        else
+            ggprint(&r, 24, 24, 0x00ffffff, options[i]);
+    }
 }
