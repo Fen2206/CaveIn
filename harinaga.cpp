@@ -23,6 +23,11 @@ float py = 100.0f;
 static float sparkleTimer = 0.0f;
 static float sparkleAngle = 0.0f;
 static const float sparkleDuration = 0.6f;
+static const float baseSpeed = 4.0f;
+static const float dashPeakSpeed = 12.0f;
+static const float dashDuration = 0.28f;
+static const float dashSigma = 0.075f;
+static const float dashCooldownDuration = 0.45f;
 static bool hurtActive = false;
 static int hurtFrame = 0;
 static int hurtFrameCounter = 0;
@@ -30,6 +35,12 @@ static const int hurtFrameCount = 6;
 static const int hurtFrameDelay = 2;
 static int hurtCooldown = 0;
 static const int hurtCooldownDuration = 60;
+static bool dashActive = false;
+static bool dashKeyHeld = false;
+static float dashTimer = 0.0f;
+static float dashCooldownTimer = 0.0f;
+static float dashDirX = 0.0f;
+static float dashDirY = -1.0f;
 
 static Image southFrames[4] = {
     Image("./assets/character_sprites/male_character/south/south_00.png"),
@@ -162,6 +173,59 @@ static Image hurtSwFrames[6] = {
 static int currentFrame = 0;
 static int frameCounter = 0;
 
+static void setDirectionFromMovement(float dx, float dy)
+{
+    if (dx > 0 && dy > 0) dir = DIR_NE;
+    else if (dx < 0 && dy > 0) dir = DIR_NW;
+    else if (dx > 0 && dy < 0) dir = DIR_SE;
+    else if (dx < 0 && dy < 0) dir = DIR_SW;
+    else if (dx > 0) dir = DIR_E;
+    else if (dx < 0) dir = DIR_W;
+    else if (dy > 0) dir = DIR_N;
+    else if (dy < 0) dir = DIR_S;
+}
+
+static void getDirectionVector(Direction direction, float &dx, float &dy)
+{
+    switch (direction) {
+        case DIR_S:  dx = 0.0f;  dy = -1.0f; break;
+        case DIR_SW: dx = -0.7071f; dy = -0.7071f; break;
+        case DIR_W:  dx = -1.0f; dy = 0.0f; break;
+        case DIR_NW: dx = -0.7071f; dy = 0.7071f; break;
+        case DIR_N:  dx = 0.0f;  dy = 1.0f; break;
+        case DIR_NE: dx = 0.7071f; dy = 0.7071f; break;
+        case DIR_E:  dx = 1.0f;  dy = 0.0f; break;
+        case DIR_SE: dx = 0.7071f; dy = -0.7071f; break;
+    }
+}
+
+static float getGaussianDashSpeed(float elapsed)
+{
+    const float mu = dashDuration * 0.5f;
+    const float offset = elapsed - mu;
+    const float exponent = -(offset * offset) / (2.0f * dashSigma * dashSigma);
+    return dashPeakSpeed * expf(exponent);
+}
+
+static bool startDash(float moveDx, float moveDy)
+{
+    if (dashActive || dashCooldownTimer > 0.0f) {
+        return false;
+    }
+
+    if (moveDx != 0.0f || moveDy != 0.0f) {
+        dashDirX = moveDx;
+        dashDirY = moveDy;
+    } else {
+        getDirectionVector(dir, dashDirX, dashDirY);
+    }
+
+    dashActive = true;
+    dashTimer = 0.0f;
+    dashCooldownTimer = dashCooldownDuration;
+    return true;
+}
+
 void triggerPlayerSparkle()
 {
     sparkleTimer = sparkleDuration;
@@ -183,13 +247,19 @@ void initPlayer()
 {
     px = g.xres * 0.5f;
     py = 120.0f;
-    speed = 4.0f;
+    speed = baseSpeed;
     sparkleTimer = 0.0f;
     sparkleAngle = 0.0f;
     hurtActive = false;
     hurtFrame = 0;
     hurtFrameCounter = 0;
     hurtCooldown = 0;
+    dashActive = false;
+    dashKeyHeld = false;
+    dashTimer = 0.0f;
+    dashCooldownTimer = 0.0f;
+    dashDirX = 0.0f;
+    dashDirY = -1.0f;
 
     for (int i = 0; i < 4; i++) {
         southFrames[i].init_gl();
@@ -216,9 +286,10 @@ void initPlayer()
 
 void updatePlayer()
 {
+    const float dt = 1.0f / 60.0f;
     //sparkle timer update
     if (sparkleTimer > 0.0f) {
-        sparkleTimer -= 1.0f / 60.0f;
+        sparkleTimer -= dt;
         if (sparkleTimer < 0.0f) {
             sparkleTimer = 0.0f;
         }
@@ -238,6 +309,12 @@ void updatePlayer()
     }
     if (hurtCooldown > 0) {
         hurtCooldown--;
+    }
+    if (dashCooldownTimer > 0.0f) {
+        dashCooldownTimer -= dt;
+        if (dashCooldownTimer < 0.0f) {
+            dashCooldownTimer = 0.0f;
+        }
     }
 
     float dx = 0.0f;
@@ -260,23 +337,33 @@ void updatePlayer()
     }
 
     if (dx != 0.0f || dy != 0.0f) {
-        moving = true;
-
         float len = sqrt(dx*dx + dy*dy);
         dx /= len;
         dy /= len;
+    }
+
+    const bool dashPressed = g_keys[XK_Shift_L] || g_keys[XK_Shift_R];
+    if (dashPressed && !dashKeyHeld) {
+        startDash(dx, dy);
+    }
+    dashKeyHeld = dashPressed;
+
+    if (dashActive) {
+        moving = true;
+        dashTimer += dt;
+        px += dashDirX * getGaussianDashSpeed(dashTimer);
+        py += dashDirY * getGaussianDashSpeed(dashTimer);
+        setDirectionFromMovement(dashDirX, dashDirY);
+        if (dashTimer >= dashDuration) {
+            dashActive = false;
+            dashTimer = 0.0f;
+        }
+    } else if (dx != 0.0f || dy != 0.0f) {
+        moving = true;
 
         px += dx * speed;
         py += dy * speed;
-
-        if (dx > 0 && dy > 0) dir = DIR_NE;
-        else if (dx < 0 && dy > 0) dir = DIR_NW;
-        else if (dx > 0 && dy < 0) dir = DIR_SE;
-        else if (dx < 0 && dy < 0) dir = DIR_SW;
-        else if (dx > 0) dir = DIR_E;
-        else if (dx < 0) dir = DIR_W;
-        else if (dy > 0) dir = DIR_N;
-        else if (dy < 0) dir = DIR_S;
+        setDirectionFromMovement(dx, dy);
     }
 
     // animation
