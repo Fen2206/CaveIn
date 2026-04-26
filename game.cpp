@@ -55,6 +55,12 @@ Global::Global()
     showfps = 1;
     shieldTimer = 0;
     speedTimer = 0;
+    maxStamina = 100.0f;
+    stamina = maxStamina;
+    staminaRegenRate = 24.0f;
+    dashStaminaCost = 25.0f;
+    staminaRegenDelay = 0.35f;
+    staminaRegenTimer = 0.0f;
     debugMode = 0;
 
 }
@@ -85,6 +91,8 @@ void initGame()
 
     g.health = g.maxHealth;
     g.hurtTimer = 0;
+    g.stamina = g.maxStamina;
+    g.staminaRegenTimer = 0.0f;
 
     initPlayer();      // harinaga.cpp
     initPowerups();    // falrowhani.cpp

@@ -56,6 +56,12 @@ public:
     int shieldTimer;
     int speedTimer;
     int level;
+    float stamina;
+    float maxStamina;
+    float staminaRegenRate;
+    float dashStaminaCost;
+    float staminaRegenDelay;
+    float staminaRegenTimer;
     float scale;
     int menuSelection;
     int endSelection;

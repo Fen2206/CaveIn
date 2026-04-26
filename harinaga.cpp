@@ -212,6 +212,9 @@ static bool startDash(float moveDx, float moveDy)
     if (dashActive || dashCooldownTimer > 0.0f) {
         return false;
     }
+    if (g.stamina < g.dashStaminaCost) {
+        return false;
+    }
 
     if (moveDx != 0.0f || moveDy != 0.0f) {
         dashDirX = moveDx;
@@ -223,6 +226,11 @@ static bool startDash(float moveDx, float moveDy)
     dashActive = true;
     dashTimer = 0.0f;
     dashCooldownTimer = dashCooldownDuration;
+    g.stamina -= g.dashStaminaCost;
+    if (g.stamina < 0.0f) {
+        g.stamina = 0.0f;
+    }
+    g.staminaRegenTimer = g.staminaRegenDelay;
     return true;
 }
 
@@ -314,6 +322,17 @@ void updatePlayer()
         dashCooldownTimer -= dt;
         if (dashCooldownTimer < 0.0f) {
             dashCooldownTimer = 0.0f;
+        }
+    }
+    if (g.staminaRegenTimer > 0.0f) {
+        g.staminaRegenTimer -= dt;
+        if (g.staminaRegenTimer < 0.0f) {
+            g.staminaRegenTimer = 0.0f;
+        }
+    } else if (g.stamina < g.maxStamina) {
+        g.stamina += g.staminaRegenRate * dt;
+        if (g.stamina > g.maxStamina) {
+            g.stamina = g.maxStamina;
         }
     }
 
