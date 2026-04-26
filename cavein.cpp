@@ -257,10 +257,22 @@ void renderSettings();
 //==========================================================================
 // M A I N
 //==========================================================================
-int main()
+int main(int argc, char *argv[])
 {
     // logOpen();
     srand(time(NULL));
+    int targetfps = 60;
+    double frameTime = 1.0 / targetfps;
+    if (argc == 2) {
+	    targetfps = atoi(argv[1]);
+	    frameTime = 1.0 / targetfps;
+	    printf("fps will be %i\n", targetfps);
+    } else {
+	    printf("Usage: %s <fps>\n", argv[0]);
+	    printf("Example: %s 30 <--- fps will be set to 30\n", argv[0]);
+	    exit(0);
+    }
+
     init_opengl();
     init_misc();
     clock_gettime(CLOCK_REALTIME, &timePause);
@@ -272,7 +284,10 @@ int main()
     int seconds = time(NULL);
     while (!done)
     {
-        while (x11.getXPending())
+    	timespec frameStart, frameEnd;
+	double frameSpan, sleepTime;
+    	clock_gettime(CLOCK_REALTIME, &frameStart);
+	while (x11.getXPending())
         {
             XEvent e = x11.getXNextEvent();
             x11.check_resize(&e);
@@ -297,18 +312,13 @@ int main()
 		seconds = tmp;
 	}
         x11.swapBuffers();
-
-/*
-        g.frameCount++; 
-		time_t curr =time(NULL);
-		if (curr != g.final) { 
-			g.fps =g.frameCount; 
-			g.frameCount =0; 
-			g.final = curr;*/
-		//}
-
-	usleep(200); 		// pause to let X11 work better
-
+	    	clock_gettime(CLOCK_REALTIME, &frameEnd);
+	        frameSpan = timeDiff(&frameStart, &frameEnd);
+		sleepTime = frameTime - frameSpan;
+		if (sleepTime > 0.0) {
+			const double MICROSECONDS = 1000000.0;
+			usleep(sleepTime*MICROSECONDS); // convert from seconds to micros
+		}
     }
     cleanup_fonts();
     // logClose();
