@@ -694,11 +694,6 @@ void renderTitle()
     g.background.show(g.xres/2, g.xres/2, g.yres/2, 0.0f);
     titleAnimationRender();
 
-    Rect r;
-    r.bot = g.yres/2 - 10;
-    r.left = g.xres/2;
-    r.center = 1;
-
     Rect r2;
     r2.bot = 250;
     r2.left = g.xres/2;
