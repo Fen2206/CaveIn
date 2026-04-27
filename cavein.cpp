@@ -269,27 +269,27 @@ int main(int argc, char *argv[])
     //command line arguments 
     int startLevel = 1;
 
-    for (int i = 1; i < argc; i++) {
-        if (strncmp(argv[i], "level", 5) == 0) {
-            int n = atoi(argv[i] + 5);
-            if (n >= 1)
-                startLevel = n;
-        }
-    } 
-    g.level = startLevel;
     // logOpen();
     srand(time(NULL));
     int targetfps = 60;
     double frameTime = 1.0 / targetfps;
-    if (argc == 2) {
+    if (argc > 2) {
 	    targetfps = atoi(argv[1]);
 	    frameTime = 1.0 / targetfps;
 	    printf("fps will be %i\n", targetfps);
+	    for (int i = 1; i < argc; i++) {
+		    if (strncmp(argv[i], "level", 5) == 0) {
+			    int n = atoi(argv[i] + 5);
+			    if (n >= 1)
+				    startLevel = n;
+		    }
+	    } 
     } else {
-	    printf("Usage: %s <fps>\n", argv[0]);
-	    printf("Example: %s 30 <--- fps will be set to 30\n", argv[0]);
+	    printf("Usage: %s <fps> <level>\n", argv[0]);
+	    printf("Example: %s 30 level5 <--- fps will be 30, level 5\n", argv[0]);
 	    exit(0);
     }
+    g.level = startLevel;
 
     init_opengl();
     init_misc();
