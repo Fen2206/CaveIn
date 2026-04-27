@@ -257,6 +257,7 @@ void renderGame();
 void renderScrollingGameBackground();
 void gamePhysics();
 void renderHealth();
+void renderStaminaBar();
 void renderSettings();
 
 //==========================================================================
@@ -278,6 +279,18 @@ int main(int argc, char **argv)
     g.level = startLevel;
     // logOpen();
     srand(time(NULL));
+    int targetfps = 60;
+    double frameTime = 1.0 / targetfps;
+    if (argc == 2) {
+	    targetfps = atoi(argv[1]);
+	    frameTime = 1.0 / targetfps;
+	    printf("fps will be %i\n", targetfps);
+    } else {
+	    printf("Usage: %s <fps>\n", argv[0]);
+	    printf("Example: %s 30 <--- fps will be set to 30\n", argv[0]);
+	    exit(0);
+    }
+
     init_opengl();
     init_misc();
     clock_gettime(CLOCK_REALTIME, &timePause);
@@ -289,7 +302,10 @@ int main(int argc, char **argv)
     int seconds = time(NULL);
     while (!done)
     {
-        while (x11.getXPending())
+    	timespec frameStart, frameEnd;
+	double frameSpan, sleepTime;
+    	clock_gettime(CLOCK_REALTIME, &frameStart);
+	while (x11.getXPending())
         {
             XEvent e = x11.getXNextEvent();
             x11.check_resize(&e);
@@ -314,18 +330,13 @@ int main(int argc, char **argv)
 		seconds = tmp;
 	}
         x11.swapBuffers();
-
-/*
-        g.frameCount++; 
-		time_t curr =time(NULL);
-		if (curr != g.final) { 
-			g.fps =g.frameCount; 
-			g.frameCount =0; 
-			g.final = curr;*/
-		//}
-
-	usleep(200); 		// pause to let X11 work better
-
+	    	clock_gettime(CLOCK_REALTIME, &frameEnd);
+	        frameSpan = timeDiff(&frameStart, &frameEnd);
+		sleepTime = frameTime - frameSpan;
+		if (sleepTime > 0.0) {
+			const double MICROSECONDS = 1000000.0;
+			usleep(sleepTime*MICROSECONDS); // convert from seconds to micros
+		}
     }
     cleanup_fonts();
     // logClose();
@@ -678,6 +689,63 @@ void renderHealth()
         }
     }
 
+}
+
+void renderStaminaBar()
+{
+    const float barWidth = 180.0f;
+    const float barLeft = g.xres - barWidth - 20.0f;
+    const float barBottom = 18.0f;
+    const float barHeight = 10.0f;
+    float ratio = 0.0f;
+    if (g.maxStamina > 0.0f) {
+        ratio = g.stamina / g.maxStamina;
+    }
+    if (ratio < 0.0f) ratio = 0.0f;
+    if (ratio > 1.0f) ratio = 1.0f;
+
+    Rect label;
+    label.left = (int)barLeft;
+    label.bot = (int)(barBottom + 16.0f);
+    label.center = 0;
+    ggprint(&label, 14, 0, 0x00ffffff, "Stamina");
+
+    glDisable(GL_TEXTURE_2D);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    glColor4f(0.08f, 0.10f, 0.14f, 0.85f);
+    glBegin(GL_QUADS);
+        glVertex2f(barLeft, barBottom);
+        glVertex2f(barLeft + barWidth, barBottom);
+        glVertex2f(barLeft + barWidth, barBottom + barHeight);
+        glVertex2f(barLeft, barBottom + barHeight);
+    glEnd();
+
+    float fillWidth = (barWidth - 4.0f) * ratio;
+    const bool lowStamina = ratio < 0.3f;
+    if (lowStamina) {
+        glColor4f(0.90f, 0.65f, 0.12f, 0.95f);
+    } else {
+        glColor4f(0.98f, 0.86f, 0.22f, 0.95f);
+    }
+    glBegin(GL_QUADS);
+        glVertex2f(barLeft + 2.0f, barBottom + 2.0f);
+        glVertex2f(barLeft + 2.0f + fillWidth, barBottom + 2.0f);
+        glVertex2f(barLeft + 2.0f + fillWidth, barBottom + barHeight - 2.0f);
+        glVertex2f(barLeft + 2.0f, barBottom + barHeight - 2.0f);
+    glEnd();
+
+    glColor4f(1.0f, 1.0f, 1.0f, 0.9f);
+    glBegin(GL_LINE_LOOP);
+        glVertex2f(barLeft, barBottom);
+        glVertex2f(barLeft + barWidth, barBottom);
+        glVertex2f(barLeft + barWidth, barBottom + barHeight);
+        glVertex2f(barLeft, barBottom + barHeight);
+    glEnd();
+
+    glDisable(GL_BLEND);
+    glEnable(GL_TEXTURE_2D);
 }
 
 

@@ -12,8 +12,8 @@
 #include "jgaribay.h"
 
 extern Global g;
-extern float px;
-extern float py;
+extern float playerPosX;
+extern float playerPosY;
 
 static const int SPIKE_HURT_COOLDOWN = 60;
 static const int FIRE_ROCK_HURT_COOLDOWN = 45;
@@ -294,8 +294,8 @@ static void drawFireRockShadow(float x, float y, float impactY)
     float radiusX = 11.0f + warningProgress * 12.0f;
     float radiusY = 4.0f + warningProgress * 5.0f;
     float alpha = 0.18f + warningProgress * 0.32f;
-    float sx = x - g.cameraX;
-    float sy = impactY - g.cameraY;
+    float screenX = x - g.cameraX;
+    float screenY = impactY - g.cameraY;
 
     glBindTexture(GL_TEXTURE_2D, 0);
     glDisable(GL_TEXTURE_2D);
@@ -304,11 +304,11 @@ static void drawFireRockShadow(float x, float y, float impactY)
     glColor4f(0.0f, 0.0f, 0.0f, alpha);
 
     glBegin(GL_TRIANGLE_FAN);
-        glVertex2f(sx, sy);
+        glVertex2f(screenX, screenY);
         for (int i = 0; i <= 32; i++) {
             float angle = i * 6.28318530718f / 32.0f;
-            glVertex2f(sx + cosf(angle) * radiusX,
-                       sy + sinf(angle) * radiusY);
+            glVertex2f(screenX + cosf(angle) * radiusX,
+                       screenY + sinf(angle) * radiusY);
         }
     glEnd();
 
@@ -410,13 +410,13 @@ static void spawnFireRockFromSky()
     float horizontalLimit = 140.0f;
     float targetRadius = 35.0f;
 
-    float targetX = px + (frand01() - 0.5f) * (targetRadius * 2.0f);
+    float targetX = playerPosX + (frand01() - 0.5f) * (targetRadius * 2.0f);
     if (targetX < center - horizontalLimit)
         targetX = center - horizontalLimit;
     if (targetX > center + horizontalLimit)
         targetX = center + horizontalLimit;
 
-    float targetY = py + (frand01() - 0.5f) * (targetRadius * 2.0f);
+    float targetY = playerPosY + (frand01() - 0.5f) * (targetRadius * 2.0f);
     if (targetY < 0.0f)
         targetY = 0.0f;
 
@@ -498,21 +498,21 @@ void propsRender()
         if (!props[i].active)
             continue;
 
-        float sx = props[i].x - g.cameraX;
-        float sy = props[i].y - g.cameraY;
+        float screenX = props[i].x - g.cameraX;
+        float screenY = props[i].y - g.cameraY;
 
         if (props[i].type == PROP_DIAMOND) {
-            g.diamond.show(diamondSize, (int)sx, (int)sy, 0.0f, 0);
+            g.diamond.show(diamondSize, (int)screenX, (int)screenY, 0.0f, 0);
         }
         else if (props[i].type == PROP_SPIKE) {
-            g.spike.show(spikeSize, (int)sx, (int)sy, 0.0f, 0);
+            g.spike.show(spikeSize, (int)screenX, (int)screenY, 0.0f, 0);
         }
         else if (props[i].type == PROP_FIRE_ROCK) {
             if (!props[i].landed) {
                 drawFireRockShadow(props[i].impactX, props[i].y, props[i].impactY);
-                g.fireRock.show(FIRE_ROCK_SIZE, (int)sx, (int)sy, 0.0f, 0);
+                g.fireRock.show(FIRE_ROCK_SIZE, (int)screenX, (int)screenY, 0.0f, 0);
             } else {
-                g.fireImpact.show(FIRE_ROCK_SIZE, (int)sx, (int)sy, 0.0f, 0);
+                g.fireImpact.show(FIRE_ROCK_SIZE, (int)screenX, (int)screenY, 0.0f, 0);
             }
         }
     }
@@ -527,8 +527,8 @@ void propsCheckCollisionsWithPlayer()
     const float spikeHitboxW = 18.0f;
     const float spikeHitboxH = 16.0f;
 
-    float pLeft = px - playerW * 0.5f;
-    float pBot  = py - playerH * 0.5f;
+    float pLeft = playerPosX - playerW * 0.5f;
+    float pBot  = playerPosY - playerH * 0.5f;
 
     for (int i = 0; i < propCount; i++) {
         if (!props[i].active)
@@ -599,7 +599,7 @@ void gamePhysics()
     updatePowerups();
 
     g.cameraX = 0.0f;
-    g.cameraY = py - (g.yres * 0.5f);
+    g.cameraY = playerPosY - (g.yres * 0.5f);
 
     if (g.cameraY < 0.0f) {
         g.cameraY = 0.0f;

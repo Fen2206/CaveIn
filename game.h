@@ -1,3 +1,8 @@
+/*
+ * program:     cavein.cpp
+ * modified by: fenoon alrowhani, henry arinaga, joshua garibay
+ * date:        spring 2026
+ */
 #ifndef GAME_H
 #define GAME_H
 
@@ -56,6 +61,12 @@ public:
     int shieldTimer;
     int speedTimer;
     int level;
+    float stamina;
+    float maxStamina;
+    float staminaRegenRate;
+    float dashStaminaCost;
+    float staminaRegenDelay;
+    float staminaRegenTimer;
     float scale;
     int menuSelection;
     int endSelection;
