@@ -158,8 +158,26 @@ void renderGameDisplay()
     ggprint(&r, 16, 20, 0x00ffffff, timerText);
     ggprint(&r, 16, 20, 0x00ffffff, "Level: %d", g.level);
     ggprint(&r, 16, 20, 0x00ffffff, "Score: %i", g.score);
+   
     if (g.showfps)
     	ggprint(&r, 16, 20, 0x00ffffff, "fps: %i", g.fps);
+     if (g.show_warning) {
+        glPushMatrix();
+        glLoadIdentity();
+        glColor3f(0.0f, 0.0f, 0.0f); // Black color
+        glBegin(GL_QUADS);
+            glVertex2f(g.xres/2 - 100, g.yres/2 + 20);
+            glVertex2f(g.xres/2 + 100, g.yres/2 + 20);
+            glVertex2f(g.xres/2 + 100, g.yres/2 - 20);
+            glVertex2f(g.xres/2 - 100, g.yres/2 - 20);
+        glEnd();
+        glPopMatrix();
+
+
+         ggprint(&r, 16, 20, 0x00ffffff, "Beware!");
+
+
+    }
 
     if (levelPassed) {
         Rect passed;

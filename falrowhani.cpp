@@ -31,7 +31,7 @@ static inline bool AABB(float ax, float ay, float aw, float ah,
 }
 
 static const int   MAX_ROCKS = 50;
-static const float FLOOR_Y   = 130.0f;
+static float FLOOR_Y = 130.0f;
 
 static Image caveTitle("./assets/cave.png");
 static Image inTitle("./assets/in.png");
@@ -68,8 +68,16 @@ static void spawnRock(int i)
     rocks[i].alive   = true;
     rocks[i].settled = false;
 
-    rocks[i].x = 180.0f + frand01() * 140.0f;
-    rocks[i].y = 580.0f - frand01() * 120.0f;
+   // rocks[i].x = 180.0f + frand01() * 140.0f;
+    //rocks[i].y = 580.0f - frand01() * 120.0f;
+
+    float centerX = gx * 0.5f;
+    float spawnWidth = gx * 0.28f;
+    float spawnTop = gy * 0.92f;
+    float spawnHeight = gy * 0.20f;
+
+    rocks[i].x = centerX - spawnWidth * 0.5f + frand01() * spawnWidth;
+    rocks[i].y = spawnTop - frand01() * spawnHeight;
 
     rocks[i].vx = (frand01() - 0.5f) * 0.6f;
     rocks[i].vy = -(1.5f + frand01() * 2.5f);
@@ -82,8 +90,12 @@ static void spawnRock(int i)
 
 void titleAnimationInit(int xres, int yres)
 {
+    
     gx = xres;
     gy = yres;
+
+    FLOOR_Y = gy * 0.23f;
+
     initialized = 1;
 
     for (int i = 0; i < MAX_ROCKS; i++) {
@@ -95,13 +107,21 @@ void titleAnimationInit(int xres, int yres)
     caveTitle.init_gl();
     inTitle.init_gl();
 
-    // Final resting position of CAVE
-    caveTargetX = gx / 2.0f;
-    caveTargetY = gy / 2.0f + 120.0f;
+    //dynamic positions 
 
-    // Final resting position of IN, centered below CAVE
-    inTargetX = gx / 2.0f;
-    inTargetY = caveTargetY - 85.0f;
+    caveW = gx * 0.64f;
+    if (caveW < 220.0f) caveW = 220.0f;
+    if (caveW > 500.0f) caveW = 500.0f;
+
+    inW = gx * 0.24f;
+    if (inW < 90.0f) inW = 90.0f;
+    if (inW > 180.0f) inW = 180.0f;
+
+    caveTargetX = gx * 0.5f;
+    caveTargetY = gy * 0.5f + gy * 0.20f;
+
+    inTargetX = gx * 0.5f;
+    inTargetY = caveTargetY - gy * 0.15f;
 
     // Start offscreen
     caveX = gx + caveW;
@@ -147,7 +167,6 @@ void titleAnimationUpdate(float gravity)
         }
     }
 
-    // Move CAVE in from the right first
     if (!caveArrived) {
         caveX -= 12.0f;
         if (caveX <= caveTargetX) {
@@ -155,7 +174,6 @@ void titleAnimationUpdate(float gravity)
             caveArrived = true;
         }
     }
-  // move IN from the left
     else if (!inArrived) {
         inX += 12.0f;
         if (inX >= inTargetX) {
@@ -530,7 +548,7 @@ void propsCheckCollisionsWithPlayer()
         }
         else if (props[i].type == PROP_FIRE_ROCK) {
             g.show_warning = 1;
-            g.warning_timer = 50;
+            g.warning_timer = 2;
             hitW = props[i].landed ? FIRE_IMPACT_SIZE : FIRE_ROCK_SIZE;
             hitH = hitW;
         }
