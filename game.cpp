@@ -133,8 +133,8 @@ int getLevelTimeRemaining()
 void renderGameDisplay()
 {
     Rect r;
-    r.left = 20;
-    r.bot = g.yres - 30;
+    r.left = g.xres - 120.0f;
+    r.bot = g.yres - 30.0f;
     r.center = 0;
 
     const int totalSeconds = getLevelTimeRemaining();
@@ -142,8 +142,29 @@ void renderGameDisplay()
     const int seconds = totalSeconds % 60;
     char timerText[64];
     snprintf(timerText, sizeof(timerText), "Time: %d:%02d", minutes, seconds);
-    ggprint(&r, 24, 16, 0x00ffffff, timerText);
-    ggprint(&r, 20, 16, 0x00ffffff, "Level: %d", g.level);
+    ggprint(&r, 16, 20, 0x00ffffff, timerText);
+    ggprint(&r, 16, 20, 0x00ffffff, "Level: %d", g.level);
+    ggprint(&r, 16, 20, 0x00ffffff, "Score: %i", g.score);
+   
+    if (g.showfps)
+    	ggprint(&r, 16, 20, 0x00ffffff, "fps: %i", g.fps);
+     if (g.show_warning) {
+        glPushMatrix();
+        glLoadIdentity();
+        glColor3f(0.0f, 0.0f, 0.0f); // Black color
+        glBegin(GL_QUADS);
+            glVertex2f(g.xres/2 - 100, g.yres/2 + 20);
+            glVertex2f(g.xres/2 + 100, g.yres/2 + 20);
+            glVertex2f(g.xres/2 + 100, g.yres/2 - 20);
+            glVertex2f(g.xres/2 - 100, g.yres/2 - 20);
+        glEnd();
+        glPopMatrix();
+
+
+         ggprint(&r, 16, 20, 0x00ffffff, "Beware!");
+
+
+    }
 
     if (levelPassed) {
         Rect passed;

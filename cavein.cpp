@@ -176,17 +176,17 @@ public:
     XFreeGC(dpy, gc);
 }
     void reshape_window(int width, int height)
-    {
-        // window has been resized.
-        setup_screen_res(width, height);
-        glViewport(0, 0, (GLint)width, (GLint)height);
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
-        glOrtho(0, g.xres, 0, g.yres, -1, 1);
-        set_title();
-    }
+{
+    setup_screen_res(width, height);
+    glViewport(0, 0, (GLint)width, (GLint)height);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glOrtho(0, g.xres, 0, g.yres, -1, 1);
+    titleAnimationInit(width, height);
+    set_title();
+}
     void setup_screen_res(const int w, const int h)
     {
         g.xres = w;
@@ -237,7 +237,12 @@ public:
         // it will undo the last change done by XDefineCursor
         //(thus do only use ONCE XDefineCursor and then XUndefineCursor):
     }
-} x11(g.xres, g.yres);
+}; 
+//x11(g.xres, g.yres);
+//X11_wrapper x11(0, 0);
+X11_wrapper x11(g.xres, g.yres);
+
+//static X11_wrapper *x11 = NULL;
 // ---> for fullscreen x11(0, 0);
 
 // function prototypes
@@ -257,8 +262,20 @@ void renderSettings();
 //==========================================================================
 // M A I N
 //==========================================================================
-int main()
+int main(int argc, char **argv)
 {
+
+    //command line arguments 
+    int startLevel = 1;
+
+    for (int i = 1; i < argc; i++) {
+        if (strncmp(argv[i], "level", 5) == 0) {
+            int n = atoi(argv[i] + 5);
+            if (n >= 1)
+                startLevel = n;
+        }
+    } 
+    g.level = startLevel;
     // logOpen();
     srand(time(NULL));
     init_opengl();
@@ -477,7 +494,7 @@ int check_keys(XEvent *e)
 
             if (g.menuSelection == 0) {
                 g.state = STATE_GAME;
-                g.level = 1;
+                //g.level = 1;
                 initGame();
             }
 
@@ -654,49 +671,12 @@ void renderHealth()
     }
 
     bar->show(120.0f, 110, g.yres - 35, 0.0f, 0);
-
-    g.diamond.show(18.0f, 30, g.yres - 70, 0.0f, 0);
-
-    Rect r;
-    r.left = 20;
-    r.bot = g.yres - 78;
-    r.center = 0;
-
-    ggprint(&r, 16, 0x00ffffff, 0xFFFFFFFF, "Score: %d", g.score);
-
-     if (g.show_warning) {
-        glPushMatrix();
-        glLoadIdentity();
-        glColor3f(0.0f, 0.0f, 0.0f); // Black color
-        glBegin(GL_QUADS);
-            glVertex2f(g.xres/2 - 100, g.yres/2 + 20);
-            glVertex2f(g.xres/2 + 100, g.yres/2 + 20);
-            glVertex2f(g.xres/2 + 100, g.yres/2 - 20);
-            glVertex2f(g.xres/2 - 100, g.yres/2 - 20);
-        glEnd();
-        glPopMatrix();
-
-        r.left = g.xres/2 - 220;
-        r.bot = g.yres/2+ 190;
-        r.center = 0;
-
-         ggprint(&r, 16, 0x00ffffff, 0xFFFFFFFF, "Meteorite Coming!");
-
-        //gprint16(&r, 1000, , "Meteorite Coming!");
-    }
-
     if (g.warning_timer > 0) {
         g.warning_timer--;
         if (g.warning_timer == 0) {
             g.show_warning = 0;
         }
     }
-
-    //char str[64];
-    //sprintf(str, "Score: %d", g.score);
-    ggprint(&r, 16, 22, 0xFFFFFFFF, "Score: %d", g.score);
-    if (g.showfps)
-    	ggprint(&r, 16, 22, 0x00ffffff, "<f> fps: %i", g.fps);
 
 }
 
@@ -716,6 +696,10 @@ void renderScrollingGameBackground()
         g.game.show(g.xres / 2, (int)centerX, (int)drawY, 0.0f);
     }
 }
+
+
+
+
 void renderTitle()
 {
    
@@ -723,13 +707,14 @@ void renderTitle()
     g.background.show(g.xres/2, g.xres/2, g.yres/2, 0.0f);
     titleAnimationRender();
 
-    Rect r;
-    r.bot = g.yres/2 - 10;
-    r.left = g.xres/2;
-    r.center = 1;
+   // Rect r;
+    //r.bot = g.yres/2 - 10;
+    //r.left = g.xres/2;
+    //r.center = 1;
 
     Rect r2;
-    r2.bot = 250;
+   // r2.bot = 250;
+   r2.bot = (int)(g.yres * 0.44f);
     r2.left = g.xres/2;
     r2.center = 1;
 
@@ -771,4 +756,17 @@ void renderSettings()
 
     ggprint(&r, 32, 32, 0x00ffffff, "SETTINGS");
     ggprint(&r, 24, 24, 0x0000ff00, "Back");
+    
+    const int NOPTIONS = 1;
+    const char *options[NOPTIONS] = {
+        "show fps - f",
+    };
+
+    for (int i = 0; i < NOPTIONS; i++)
+    {
+        if (i == g.menuSelection)
+            ggprint(&r, 24, 24, 0x0000ff00, options[i]);
+        else
+            ggprint(&r, 24, 24, 0x00ffffff, options[i]);
+    }
 }
