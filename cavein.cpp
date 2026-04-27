@@ -682,6 +682,7 @@ void renderHealth()
     }
 
     bar->show(120.0f, 110, g.yres - 35, 0.0f, 0);
+    renderStaminaBar();
     if (g.warning_timer > 0) {
         g.warning_timer--;
         if (g.warning_timer == 0) {
