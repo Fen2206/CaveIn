@@ -1,3 +1,8 @@
+/*
+ * program:     cavein.cpp
+ * modified by: fenoon alrowhani, henry arinaga, joshua garibay
+ * date:        spring 2026
+ */
 #ifndef GAME_H
 #define GAME_H
 

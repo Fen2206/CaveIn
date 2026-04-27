@@ -1,3 +1,8 @@
+/*
+ * program:     cavein.cpp
+ * modified by: henry arinaga
+ * date:        spring 2026
+ */
 #include "harinaga.h"
 #include <GL/gl.h>
 #include <cmath>

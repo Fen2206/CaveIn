@@ -1,3 +1,8 @@
+/*
+ * program:     cavein.cpp
+ * modified by: joshua garibay
+ * date:        spring 2026
+ */
 #include <cstdio>
 #include <AL/alut.h>
 #include <unistd.h>

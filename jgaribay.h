@@ -1,3 +1,8 @@
+/*
+ * program:     cavein.cpp
+ * modified by: joshua garibay
+ * date:        spring 2026
+ */
 #ifndef _JGARIBAY_H_
 #define _JGARIBAY_H_
 #include <AL/alut.h>
