@@ -110,14 +110,14 @@ void Powerup::init(PowerupType type, Image *image, Sound *s, float x, float y, f
 
 void Powerup::draw()
 {
-	float sx = x - g.cameraX;
-	float sy = y - g.cameraY;
+	float screenX = x - g.cameraX;
+	float screenY = y - g.cameraY;
 
 	// custom draw() implemented for my collision
 	glBindTexture(GL_TEXTURE_2D, image->texture);
 	glColor4f(0.0, 0.0, 0.0, 0.0);
 	glPushMatrix();
-		glTranslatef(sx, sy, 0.0f);
+		glTranslatef(screenX, screenY, 0.0f);
 		glEnable(GL_ALPHA_TEST);
 		glAlphaFunc(GL_GREATER, 0.0f);
 		glColor4ub(255, 255, 255, 255);
@@ -171,21 +171,21 @@ bool Powerup::isActive()
 }
 
 // ----- Other functions -----
-extern float px, py;
+extern float playerPosX, playerPosY;
 void test()
 {
 	if (g_keys[XK_y])
 		hurtSound.play();
 	/*
-	shieldPowerup.update(px, py, pw, ph);
+	shieldPowerup.update(playerPosX, playerPosY, pw, ph);
 	if (shieldPowerup.isActive())
 		shieldPowerup.draw();
 
-	speedPowerup.update(px, py, pw, ph);
+	speedPowerup.update(playerPosX, playerPosY, pw, ph);
 	if (speedPowerup.isActive())
 		speedPowerup.draw();
 
-	heartPowerup.update(px, py, pw, ph);
+	heartPowerup.update(playerPosX, playerPosY, pw, ph);
 	if (heartPowerup.isActive())
 		heartPowerup.draw();
 	*/
@@ -233,11 +233,11 @@ void renderHelp()
 
 void drawStatusEffects()
 {
-	float sx = px - g.cameraX;
-	float sy = py - g.cameraY;
+	float screenX = playerPosX - g.cameraX;
+	float screenY = playerPosY - g.cameraY;
 	const float imgWidth = 24.0;
 	if (g.shieldTimer > 0)
-		bubbleImage.show(imgWidth, sx, sy, 0.0f);
+		bubbleImage.show(imgWidth, screenX, screenY, 0.0f);
 }
 
 void spawnPowerup(PowerupType type, Image *img, Sound *s, float x, float y,
@@ -287,7 +287,7 @@ void updatePowerups()
 	const float ph = 32.0f;
 
 	for (int i = 0; i < npowerups; i++) {
-		powerup[i].update(px, py, pw, ph);
+		powerup[i].update(playerPosX, playerPosY, pw, ph);
 	}
 }
 
@@ -346,4 +346,3 @@ void renderPaused()
 		ggprint(&r, 24, 30, (i == g.pausedSelection) ?
 				0x0000ff00 : 0x00ffffff, list[i]);
 }
-
