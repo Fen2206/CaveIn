@@ -16,6 +16,9 @@
 #include <ctime>
 #include <cmath>
 #include <X11/Xlib.h>
+#include <GL/gl.h> 		
+#include <GL/glu.h>
+
 // #include <X11/Xutil.h>
 // #include <GL/gl.h>
 // #include <GL/glu.h>
@@ -28,6 +31,7 @@
 #include "jgaribay.h"
 #include "game.h"
 #include "input.h"
+
 // defined types
 typedef float Flt;
 typedef float Vec[3];
@@ -162,18 +166,27 @@ public:
             reshape_window(xce.width, xce.height);
         }
     }
+    void draw_text(int x, int y, const char *str)
+{
+    int yx11 = g.yres - y;
+
+    GC gc = XCreateGC(dpy, win, 0, NULL);
+    XSetForeground(dpy, gc, 0x00ffffff);
+    XDrawString(dpy, win, gc, x, yx11, str, (int)strlen(str));
+    XFreeGC(dpy, gc);
+}
     void reshape_window(int width, int height)
-    {
-        // window has been resized.
-        setup_screen_res(width, height);
-        glViewport(0, 0, (GLint)width, (GLint)height);
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
-        glOrtho(0, g.xres, 0, g.yres, -1, 1);
-        set_title();
-    }
+{
+    setup_screen_res(width, height);
+    glViewport(0, 0, (GLint)width, (GLint)height);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glOrtho(0, g.xres, 0, g.yres, -1, 1);
+    titleAnimationInit(width, height);
+    set_title();
+}
     void setup_screen_res(const int w, const int h)
     {
         g.xres = w;
@@ -197,6 +210,7 @@ public:
     {
         XWarpPointer(dpy, None, win, 0, 0, 0, 0, x, y);
     }
+
     void show_mouse_cursor(const int onoff)
     {
         // printf("show_mouse_cursor(%i)\n", onoff); fflush(stdout);
@@ -223,7 +237,12 @@ public:
         // it will undo the last change done by XDefineCursor
         //(thus do only use ONCE XDefineCursor and then XUndefineCursor):
     }
-} x11(g.xres, g.yres);
+}; 
+//x11(g.xres, g.yres);
+//X11_wrapper x11(0, 0);
+X11_wrapper x11(g.xres, g.yres);
+
+//static X11_wrapper *x11 = NULL;
 // ---> for fullscreen x11(0, 0);
 
 // function prototypes
@@ -238,6 +257,7 @@ void renderGame();
 void renderScrollingGameBackground();
 void gamePhysics();
 void renderHealth();
+void renderStaminaBar();
 void renderSettings();
 
 //==========================================================================
@@ -245,6 +265,18 @@ void renderSettings();
 //==========================================================================
 int main(int argc, char *argv[])
 {
+
+    //command line arguments 
+    int startLevel = 1;
+
+    for (int i = 1; i < argc; i++) {
+        if (strncmp(argv[i], "level", 5) == 0) {
+            int n = atoi(argv[i] + 5);
+            if (n >= 1)
+                startLevel = n;
+        }
+    } 
+    g.level = startLevel;
     // logOpen();
     srand(time(NULL));
     int targetfps = 60;
@@ -379,7 +411,6 @@ void normalize2d(Vec v)
     v[0] *= len;
     v[1] *= len;
 }
-
 void check_mouse(XEvent *e)
 {
     // Did the mouse move?
@@ -475,7 +506,7 @@ int check_keys(XEvent *e)
 
             if (g.menuSelection == 0) {
                 g.state = STATE_GAME;
-                g.level = 1;
+                //g.level = 1;
                 initGame();
             }
 
@@ -625,6 +656,8 @@ void render()
 		    break;
     }
 }
+
+
 void renderHealth()
 {
     extern bool gameOver;
@@ -650,11 +683,71 @@ void renderHealth()
     }
 
     bar->show(120.0f, 110, g.yres - 35, 0.0f, 0);
+    renderStaminaBar();
+    if (g.warning_timer > 0) {
+        g.warning_timer--;
+        if (g.warning_timer == 0) {
+            g.show_warning = 0;
+        }
+    }
 
-    //g.diamond.show(18.0f, 30, g.yres - 70, 0.0f, 0);
+}
 
-    //char str[64];
-    //sprintf(str, "Score: %d", g.score);
+void renderStaminaBar()
+{
+    const float barWidth = 180.0f;
+    const float barLeft = g.xres - barWidth - 20.0f;
+    const float barBottom = 18.0f;
+    const float barHeight = 10.0f;
+    float ratio = 0.0f;
+    if (g.maxStamina > 0.0f) {
+        ratio = g.stamina / g.maxStamina;
+    }
+    if (ratio < 0.0f) ratio = 0.0f;
+    if (ratio > 1.0f) ratio = 1.0f;
+
+    Rect label;
+    label.left = (int)barLeft;
+    label.bot = (int)(barBottom + 16.0f);
+    label.center = 0;
+    ggprint(&label, 14, 0, 0x00ffffff, "Stamina");
+
+    glDisable(GL_TEXTURE_2D);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    glColor4f(0.08f, 0.10f, 0.14f, 0.85f);
+    glBegin(GL_QUADS);
+        glVertex2f(barLeft, barBottom);
+        glVertex2f(barLeft + barWidth, barBottom);
+        glVertex2f(barLeft + barWidth, barBottom + barHeight);
+        glVertex2f(barLeft, barBottom + barHeight);
+    glEnd();
+
+    float fillWidth = (barWidth - 4.0f) * ratio;
+    const bool lowStamina = ratio < 0.3f;
+    if (lowStamina) {
+        glColor4f(0.90f, 0.65f, 0.12f, 0.95f);
+    } else {
+        glColor4f(0.98f, 0.86f, 0.22f, 0.95f);
+    }
+    glBegin(GL_QUADS);
+        glVertex2f(barLeft + 2.0f, barBottom + 2.0f);
+        glVertex2f(barLeft + 2.0f + fillWidth, barBottom + 2.0f);
+        glVertex2f(barLeft + 2.0f + fillWidth, barBottom + barHeight - 2.0f);
+        glVertex2f(barLeft + 2.0f, barBottom + barHeight - 2.0f);
+    glEnd();
+
+    glColor4f(1.0f, 1.0f, 1.0f, 0.9f);
+    glBegin(GL_LINE_LOOP);
+        glVertex2f(barLeft, barBottom);
+        glVertex2f(barLeft + barWidth, barBottom);
+        glVertex2f(barLeft + barWidth, barBottom + barHeight);
+        glVertex2f(barLeft, barBottom + barHeight);
+    glEnd();
+
+    glDisable(GL_BLEND);
+    glEnable(GL_TEXTURE_2D);
 }
 
 
@@ -673,13 +766,25 @@ void renderScrollingGameBackground()
         g.game.show(g.xres / 2, (int)centerX, (int)drawY, 0.0f);
     }
 }
+
+
+
+
 void renderTitle()
 {
+   
+
     g.background.show(g.xres/2, g.xres/2, g.yres/2, 0.0f);
     titleAnimationRender();
 
+   // Rect r;
+    //r.bot = g.yres/2 - 10;
+    //r.left = g.xres/2;
+    //r.center = 1;
+
     Rect r2;
-    r2.bot = 180;
+   // r2.bot = 250;
+   r2.bot = (int)(g.yres * 0.44f);
     r2.left = g.xres/2;
     r2.center = 1;
 

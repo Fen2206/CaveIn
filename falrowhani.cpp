@@ -12,8 +12,8 @@
 #include "jgaribay.h"
 
 extern Global g;
-extern float px;
-extern float py;
+extern float playerPosX;
+extern float playerPosY;
 
 static const int SPIKE_HURT_COOLDOWN = 60;
 static const int FIRE_ROCK_HURT_COOLDOWN = 45;
@@ -31,7 +31,7 @@ static inline bool AABB(float ax, float ay, float aw, float ah,
 }
 
 static const int   MAX_ROCKS = 50;
-static const float FLOOR_Y   = 130.0f;
+static float FLOOR_Y = 130.0f;
 
 static Image caveTitle("./assets/cave.png");
 static Image inTitle("./assets/in.png");
@@ -68,8 +68,16 @@ static void spawnRock(int i)
     rocks[i].alive   = true;
     rocks[i].settled = false;
 
-    rocks[i].x = 180.0f + frand01() * 140.0f;
-    rocks[i].y = 580.0f - frand01() * 120.0f;
+   // rocks[i].x = 180.0f + frand01() * 140.0f;
+    //rocks[i].y = 580.0f - frand01() * 120.0f;
+
+    float centerX = gx * 0.5f;
+    float spawnWidth = gx * 0.28f;
+    float spawnTop = gy * 0.92f;
+    float spawnHeight = gy * 0.20f;
+
+    rocks[i].x = centerX - spawnWidth * 0.5f + frand01() * spawnWidth;
+    rocks[i].y = spawnTop - frand01() * spawnHeight;
 
     rocks[i].vx = (frand01() - 0.5f) * 0.6f;
     rocks[i].vy = -(1.5f + frand01() * 2.5f);
@@ -82,8 +90,12 @@ static void spawnRock(int i)
 
 void titleAnimationInit(int xres, int yres)
 {
+    
     gx = xres;
     gy = yres;
+
+    FLOOR_Y = gy * 0.23f;
+
     initialized = 1;
 
     for (int i = 0; i < MAX_ROCKS; i++) {
@@ -95,13 +107,21 @@ void titleAnimationInit(int xres, int yres)
     caveTitle.init_gl();
     inTitle.init_gl();
 
-    // Final resting position of CAVE
-    caveTargetX = gx / 2.0f;
-    caveTargetY = gy / 2.0f + 120.0f;
+    //dynamic positions 
 
-    // Final resting position of IN, centered below CAVE
-    inTargetX = gx / 2.0f;
-    inTargetY = caveTargetY - 85.0f;
+    caveW = gx * 0.64f;
+    if (caveW < 220.0f) caveW = 220.0f;
+    if (caveW > 500.0f) caveW = 500.0f;
+
+    inW = gx * 0.24f;
+    if (inW < 90.0f) inW = 90.0f;
+    if (inW > 180.0f) inW = 180.0f;
+
+    caveTargetX = gx * 0.5f;
+    caveTargetY = gy * 0.5f + gy * 0.20f;
+
+    inTargetX = gx * 0.5f;
+    inTargetY = caveTargetY - gy * 0.15f;
 
     // Start offscreen
     caveX = gx + caveW;
@@ -147,7 +167,6 @@ void titleAnimationUpdate(float gravity)
         }
     }
 
-    // Move CAVE in from the right first
     if (!caveArrived) {
         caveX -= 12.0f;
         if (caveX <= caveTargetX) {
@@ -155,7 +174,6 @@ void titleAnimationUpdate(float gravity)
             caveArrived = true;
         }
     }
-  // move IN from the left
     else if (!inArrived) {
         inX += 12.0f;
         if (inX >= inTargetX) {
@@ -205,9 +223,9 @@ enum {
 static Prop props[MAX_PROPS];
 static int propCount = 0;
 
-static const float CHUNK_SIZE = 256.0f;
-static const float MIN_DIST = 70.0f;
-static const int   TARGET_PER_CHUNK = 6;
+static const float chunkSize = 256.0f;
+static const float distMin = 70.0f;
+static const int   chunkTarget = 6;
 
 static int highestChunkGenerated = -1;
 
@@ -276,8 +294,8 @@ static void drawFireRockShadow(float x, float y, float impactY)
     float radiusX = 11.0f + warningProgress * 12.0f;
     float radiusY = 4.0f + warningProgress * 5.0f;
     float alpha = 0.18f + warningProgress * 0.32f;
-    float sx = x - g.cameraX;
-    float sy = impactY - g.cameraY;
+    float screenX = x - g.cameraX;
+    float screenY = impactY - g.cameraY;
 
     glBindTexture(GL_TEXTURE_2D, 0);
     glDisable(GL_TEXTURE_2D);
@@ -286,11 +304,11 @@ static void drawFireRockShadow(float x, float y, float impactY)
     glColor4f(0.0f, 0.0f, 0.0f, alpha);
 
     glBegin(GL_TRIANGLE_FAN);
-        glVertex2f(sx, sy);
+        glVertex2f(screenX, screenY);
         for (int i = 0; i <= 32; i++) {
             float angle = i * 6.28318530718f / 32.0f;
-            glVertex2f(sx + cosf(angle) * radiusX,
-                       sy + sinf(angle) * radiusY);
+            glVertex2f(screenX + cosf(angle) * radiusX,
+                       screenY + sinf(angle) * radiusY);
         }
     glEnd();
 
@@ -349,15 +367,15 @@ static void generateChunk(int chunkIndex)
     const float halfWidth = 70.0f;
     const float topPad = 20.0f;
     const float bottomPad = 20.0f;
-    const float min2 = MIN_DIST * MIN_DIST;
+    const float min2 = distMin * distMin;
 
-    float yStart = chunkIndex * CHUNK_SIZE + topPad;
-    float yEnd   = (chunkIndex + 1) * CHUNK_SIZE - bottomPad;
+    float yStart = chunkIndex * chunkSize + topPad;
+    float yEnd   = (chunkIndex + 1) * chunkSize - bottomPad;
 
     int added = 0;
-    int attempts = TARGET_PER_CHUNK * 40;
+    int attempts = chunkTarget * 40;
 
-    for (int k = 0; k < attempts && added < TARGET_PER_CHUNK; k++) {
+    for (int k = 0; k < attempts && added < chunkTarget; k++) {
         float x = (center - halfWidth) + frand01() * (halfWidth * 2.0f);
         float y = yStart + frand01() * (yEnd - yStart);
 
@@ -392,13 +410,13 @@ static void spawnFireRockFromSky()
     float horizontalLimit = 140.0f;
     float targetRadius = 35.0f;
 
-    float targetX = px + (frand01() - 0.5f) * (targetRadius * 2.0f);
+    float targetX = playerPosX + (frand01() - 0.5f) * (targetRadius * 2.0f);
     if (targetX < center - horizontalLimit)
         targetX = center - horizontalLimit;
     if (targetX > center + horizontalLimit)
         targetX = center + horizontalLimit;
 
-    float targetY = py + (frand01() - 0.5f) * (targetRadius * 2.0f);
+    float targetY = playerPosY + (frand01() - 0.5f) * (targetRadius * 2.0f);
     if (targetY < 0.0f)
         targetY = 0.0f;
 
@@ -416,7 +434,7 @@ void propsGenerateInitial()
     highestChunkGenerated = -1;
     fireRockSpawnTimer = 0;
 
-    int initialTopChunk = (int)((g.yres * 2.0f) / CHUNK_SIZE);
+    int initialTopChunk = (int)((g.yres * 2.0f) / chunkSize);
 
     for (int chunk = 0; chunk <= initialTopChunk; chunk++) {
         generateChunk(chunk);
@@ -429,7 +447,7 @@ void propsUpdateStreaming()
     removeOldProps();
 
     float wantedTopY = g.cameraY + (g.yres * 2.0f);
-    int wantedChunk = (int)(wantedTopY / CHUNK_SIZE);
+    int wantedChunk = (int)(wantedTopY / chunkSize);
 
     while (highestChunkGenerated < wantedChunk) {
         highestChunkGenerated++;
@@ -480,21 +498,21 @@ void propsRender()
         if (!props[i].active)
             continue;
 
-        float sx = props[i].x - g.cameraX;
-        float sy = props[i].y - g.cameraY;
+        float screenX = props[i].x - g.cameraX;
+        float screenY = props[i].y - g.cameraY;
 
         if (props[i].type == PROP_DIAMOND) {
-            g.diamond.show(diamondSize, (int)sx, (int)sy, 0.0f, 0);
+            g.diamond.show(diamondSize, (int)screenX, (int)screenY, 0.0f, 0);
         }
         else if (props[i].type == PROP_SPIKE) {
-            g.spike.show(spikeSize, (int)sx, (int)sy, 0.0f, 0);
+            g.spike.show(spikeSize, (int)screenX, (int)screenY, 0.0f, 0);
         }
         else if (props[i].type == PROP_FIRE_ROCK) {
             if (!props[i].landed) {
                 drawFireRockShadow(props[i].impactX, props[i].y, props[i].impactY);
-                g.fireRock.show(FIRE_ROCK_SIZE, (int)sx, (int)sy, 0.0f, 0);
+                g.fireRock.show(FIRE_ROCK_SIZE, (int)screenX, (int)screenY, 0.0f, 0);
             } else {
-                g.fireImpact.show(FIRE_IMPACT_SIZE, (int)sx, (int)sy, 0.0f, 0);
+                g.fireImpact.show(FIRE_ROCK_SIZE, (int)screenX, (int)screenY, 0.0f, 0);
             }
         }
     }
@@ -509,8 +527,8 @@ void propsCheckCollisionsWithPlayer()
     const float spikeHitboxW = 18.0f;
     const float spikeHitboxH = 16.0f;
 
-    float pLeft = px - playerW * 0.5f;
-    float pBot  = py - playerH * 0.5f;
+    float pLeft = playerPosX - playerW * 0.5f;
+    float pBot  = playerPosY - playerH * 0.5f;
 
     for (int i = 0; i < propCount; i++) {
         if (!props[i].active)
@@ -518,6 +536,7 @@ void propsCheckCollisionsWithPlayer()
 
         float hitW = 0.0f;
         float hitH = 0.0f;
+
 
         if (props[i].type == PROP_DIAMOND) {
             hitW = diamondSize;
@@ -528,6 +547,8 @@ void propsCheckCollisionsWithPlayer()
             hitH = spikeHitboxH;
         }
         else if (props[i].type == PROP_FIRE_ROCK) {
+            g.show_warning = 1;
+            g.warning_timer = 2;
             hitW = props[i].landed ? FIRE_IMPACT_SIZE : FIRE_ROCK_SIZE;
             hitH = hitW;
         }
@@ -569,6 +590,7 @@ void propsCheckCollisionsWithPlayer()
 void gamePhysics()
 {
     if (isLevelPassed()) {
+        
         return;
     }
 
@@ -577,7 +599,7 @@ void gamePhysics()
     updatePowerups();
 
     g.cameraX = 0.0f;
-    g.cameraY = py - (g.yres * 0.5f);
+    g.cameraY = playerPosY - (g.yres * 0.5f);
 
     if (g.cameraY < 0.0f) {
         g.cameraY = 0.0f;

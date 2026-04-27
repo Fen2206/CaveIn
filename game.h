@@ -1,3 +1,8 @@
+/*
+ * program:     cavein.cpp
+ * modified by: fenoon alrowhani, henry arinaga, joshua garibay
+ * date:        spring 2026
+ */
 #ifndef GAME_H
 #define GAME_H
 
@@ -22,8 +27,11 @@ public:
     float cameraX;
     float cameraY;
     int fps;
+    int frameCount;
+    time_t final; 
     int nframes;
     bool showfps;
+
 
     Image background;
     Image game;
@@ -48,10 +56,17 @@ public:
     int maxHealth;
     int score;
     int hurtTimer;
+    int show_warning;
+    int warning_timer;
     int shieldTimer;
     int speedTimer;
     int level;
-
+    float stamina;
+    float maxStamina;
+    float staminaRegenRate;
+    float dashStaminaCost;
+    float staminaRegenDelay;
+    float staminaRegenTimer;
     float scale;
     int menuSelection;
     int endSelection;

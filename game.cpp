@@ -1,3 +1,8 @@
+/*
+ * program:     cavein.cpp
+ * modified by: fenoon alrowhani, henry arinaga, joshua garibay
+ * date:        spring 2026
+ */
 #include "game.h"
 #include "harinaga.h"
 #include "jgaribay.h"
@@ -30,8 +35,12 @@ Global::Global()
     mouse_cursor_on = 1;
     state = STATE_TITLE;
     menuSelection = 0;
+    fps=0;
+    frameCount=0;
+    final=0;
     endSelection = 0;
     pausedSelection = 0;
+
 
 
     cameraX = 0.0f;
@@ -44,12 +53,21 @@ Global::Global()
     health = 8;
     score = 0;
     hurtTimer = 0;
+    show_warning = 0;
+    warning_timer = 0;
     nframes = 0;
     fps = 0;
     showfps = 1;
     shieldTimer = 0;
     speedTimer = 0;
+    maxStamina = 100.0f;
+    stamina = maxStamina;
+    staminaRegenRate = 24.0f;
+    dashStaminaCost = 25.0f;
+    staminaRegenDelay = 0.35f;
+    staminaRegenTimer = 0.0f;
     debugMode = 0;
+
 }
 
 int score = 0;
@@ -78,6 +96,8 @@ void initGame()
 
     g.health = g.maxHealth;
     g.hurtTimer = 0;
+    g.stamina = g.maxStamina;
+    g.staminaRegenTimer = 0.0f;
 
     initPlayer();      // harinaga.cpp
     initPowerups();    // falrowhani.cpp
@@ -138,8 +158,26 @@ void renderGameDisplay()
     ggprint(&r, 16, 20, 0x00ffffff, timerText);
     ggprint(&r, 16, 20, 0x00ffffff, "Level: %d", g.level);
     ggprint(&r, 16, 20, 0x00ffffff, "Score: %i", g.score);
+   
     if (g.showfps)
     	ggprint(&r, 16, 20, 0x00ffffff, "fps: %i", g.fps);
+     if (g.show_warning) {
+        glPushMatrix();
+        glLoadIdentity();
+        glColor3f(0.0f, 0.0f, 0.0f); // Black color
+        glBegin(GL_QUADS);
+            glVertex2f(g.xres/2 - 100, g.yres/2 + 20);
+            glVertex2f(g.xres/2 + 100, g.yres/2 + 20);
+            glVertex2f(g.xres/2 + 100, g.yres/2 - 20);
+            glVertex2f(g.xres/2 - 100, g.yres/2 - 20);
+        glEnd();
+        glPopMatrix();
+
+
+         ggprint(&r, 16, 20, 0x00ffffff, "Beware!");
+
+
+    }
 
     if (levelPassed) {
         Rect passed;
